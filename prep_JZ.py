@@ -64,8 +64,8 @@ for src_path in src_paths:
         st = read(sac_file)
         ts = st[0].stats.starttime
         te = st[0].stats.endtime
-        t0 = UTCDateTime(str(ts.year) + str(ts.julday+1).zfill(3))
-        tn = UTCDateTime(te.year, te.month, te.day)
+        t0 = UTCDateTime(ts.year, ts.julday) + 86400
+        tn = UTCDateTime(te.year, te.julday)
         days = int((tn-t0)/86400)
         print('archving sac_file {}, from {} to {}'.\
               format(sac_file, ts, te))
