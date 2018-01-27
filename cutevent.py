@@ -8,7 +8,7 @@ head file:
 stlo stla stel
 evlo evla evdp
 kztime
-o b = 0
+b = 0
 """
 import os, glob, shutil
 from obspy.core import *
@@ -74,9 +74,9 @@ for ctlg_line in ctlg_lines:
           s += "cuterr fillz \n"
           s += "cut b %s %s \n" %(b, e)
           s += "r %s \n" %os.path.join(path, stream)
-          s += "ch o 0 b %s \n" %time_before
+          s += "ch b %s \n" %time_before
           s += "ch nzhour %s nzmin %s nzsec %s \n" %(t0.hour, t0.minute, t0.second)
-          s += "ch nzmsec %s \n" %t0.microsecond
+          s += "ch nzmsec %s \n" %str(t0.microsecond)[0:3]
           s += "ch evlo %s evla %s evdp 5 \n" %(lon, lat)
           s += "ch mag %s \n" %mag
           s += "w %s \n" %os.path.join(out_dir, fname)
