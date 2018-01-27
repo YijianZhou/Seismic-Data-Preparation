@@ -71,6 +71,7 @@ for ctlg_line in ctlg_lines:
              print('window out of range!')
              continue
           # cut event and change the head file
+          s += "cuterr fillz \n"
           s += "cut b %s %s \n" %(b, e)
           s += "r %s \n" %os.path.join(path, stream)
           s += "ch o 0 b %s \n" %time_before
