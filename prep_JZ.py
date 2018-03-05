@@ -38,7 +38,7 @@ def slice_stream(fname, begin, end, ts, out_name):
     s += "ch nzhour %s nzmin %s nzsec %s nzmsec %s \n" %(ts.hour,
                                                          ts.minute,
                                                          ts.second,
-                                                         str(ts.microsecond)[0:3])
+                                                         ts.microsecond/1000)
     s += "ch nzyear %s nzjday %s \n" %(ts.year, ts.julday)
     s += "w %s \n" %out_name
     s += "q \n"
