@@ -19,7 +19,7 @@ for stream in streams:
     net, sta, yr, jday, chn, _ = stream.split('.')
     loc = sta_lst[sta]
     lat, lon, ele = loc.split('/')
-    s += "r %s \n" %(stream)
+    s += "rh %s \n" %(stream)
     s += "ch stlo %s stla %s \n" %(lon, lat)
     s += "ch stel %s \n" %(ele)
     s += "ch knetwk ZSY \n"
