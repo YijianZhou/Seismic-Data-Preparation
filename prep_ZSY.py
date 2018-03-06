@@ -33,7 +33,7 @@ for msd_path in msd_paths:
     for chn in ['HHE', 'HHX', 'HHN', 'HHY', 'HHZ']:
         sac_files = sorted(glob.glob('*.%s.*SAC'%chn))
         if len(sac_files)==0: continue
-        net, sta, _, chn, _, year, jday, tm, _ = sac_files[0].split('.')
+        net, sta, _, chn, _, year, jday, time, _ = sac_files[0].split('.')
         if sta not in sta_dic: continue
         loc = sta_dic[sta]
         lat, lon, ele = loc.split('/')
