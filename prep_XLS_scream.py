@@ -15,15 +15,15 @@ for src_dir in src_dirs:
     os.chdir(src_dir)
     
     # scream data are arranged by day
-    chn_E = glob.glob("*e2.msd")
-    chn_N = glob.glob("*n2.msd")
-    chn_Z = glob.glob("*z2.msd")   
-    for i in range(len(chn_E)):
-        subprocess.call(['mseed2sac', chn_E[i]])
-    for i in range(len(chn_N)):
-        subprocess.call(['mseed2sac', chn_N[i]])
-    for i in range(len(chn_Z)):
-        subprocess.call(['mseed2sac', chn_Z[i]])
+    chn_Es = glob.glob("*e2.msd")
+    chn_Ns = glob.glob("*n2.msd")
+    chn_Zs = glob.glob("*z2.msd")   
+    for chn_E in chn_Es:
+        subprocess.call(['mseed2sac', chn_E])
+    for chn_N in chn_Ns:
+        subprocess.call(['mseed2sac', chn_N])
+    for chn_Z in chn_Zs:
+        subprocess.call(['mseed2sac', chn_Z])
     
     sets = {}
     sac_files = glob.glob('.*.SAC')
