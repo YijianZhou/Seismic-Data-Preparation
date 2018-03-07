@@ -22,7 +22,7 @@ def slice_stream(fname, begin, end, ts, out_path):
     s += "ch nzhour %s nzmin %s nzsec %s nzmsec %s \n" %(ts.hour,
                                                          ts.minute,
                                                          ts.second,
-                                                         ts.microsecond)/1000)
+                                                         ts.microsecond/1000)
     s += "ch nzyear %s nzjday %s \n" %(ts.year, ts.julday)
     s += "w %s \n" %out_path
     s += "q \n"
@@ -45,7 +45,9 @@ def get_outdir(file_info, dir0, dt):
 
 
 dst_dir0 = '/data3/XJ_SAC/YN'
-src_dirs = sorted(glob.glob('/data2/yndata/2016.11.25/YN/*'))
+#src_dirs = sorted(glob.glob('/data2/yndata/2016.11.25/YN/*'))
+#src_dirs = sorted(glob.glob('/data2/yndata/2017.03.27/YN/*'))
+src_dirs = sorted(glob.glob('/data2/yndata/2017.12.26/YN/*'))
 
 # descend into source paths
 for src_dir in src_dirs:
@@ -54,7 +56,7 @@ for src_dir in src_dirs:
     
     # rdseed (to SAC)
     print('read seed files, convert to SAC')
-    seed_files = sorted(glob.glob('*seed'))
+    seed_files = sorted(glob.glob('*.seed'))
     for seed_file in seed_files:
         subprocess.call(['rdseed', '-df', seed_file])
     
@@ -100,16 +102,20 @@ dst_dirs = sorted(glob.glob('/data3/XJ_SAC/YN/*/*/*/*')) # sta/year/month/day
 for dst_dir in dst_dirs:
     print('entering {}'.format(dst_dir))
     os.chdir(dst_dir)
-    todel = glob.glob('*SAC')
-    sac_file  = sorted(glob.glob('*SAC'))[0]
-    file_info = sac_file.split('.')
+    # get file info
+    sac_files  = sorted(glob.glob('*.D.SAC'))
+    if len(sac_files)==0:
+       print('processed, continue')
+       continue
+    file_info = sac_files[0].split('.')
+    todel = sac_files
     # get out_name
     year = file_info[0]
     jday = file_info[1]
     net  = file_info[6]
     sta  = file_info[7]
     for chn in ['BHE', 'BHN', 'BHZ']:
-    	merge(net, sta, year, jday, chn)
+        merge(net, sta, year, jday, chn)
     # rm previous SAC files
     for fname in todel:
         os.unlink(fname)
