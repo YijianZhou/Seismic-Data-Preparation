@@ -123,6 +123,7 @@ for src_dir in src_dirs:
             if st_len <= te-ts:
                out_dir = get_outdir(file_info, dst_dir0, 0)
                if os.path.exists(os.path.join(out_dir, sac_file)):
+                  os.rename(sac_file, '1-'+sac_file)
                   sac_file = '1-' + sac_file
                shutil.move(sac_file, out_dir)
                print('moved to {}/{}'.format(out_dir, sac_file))
@@ -130,6 +131,7 @@ for src_dir in src_dirs:
                # cut out time before
                out_dir = get_outdir(file_info, dst_dir0, 0)
                if os.path.exists(os.path.join(out_dir, sac_file)):
+                  os.rename(sac_file, '1-'+sac_file)
                   sac_file = '1-' + sac_file
                out_name = sac_file
                out_path = os.path.join(out_dir, out_name)
