@@ -67,7 +67,7 @@ for src_dir in src_dirs:
         st = read(sac_file)
         st_len = st[0].stats.npts /100
         ts     = st[0].stats.starttime
-        te     = UTCDateTime(ts.year, ts.julday) + 86400
+        te     = UTCDateTime(str(ts.date)) + 86400
         if st_len <= te-ts:
            out_dir = get_outdir(file_info, dst_dir0, 0)
            shutil.move(sac_file, out_dir)
