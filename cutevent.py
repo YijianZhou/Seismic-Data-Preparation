@@ -76,7 +76,7 @@ for ctlg_line in ctlg_lines:
           s += "r %s \n" %os.path.join(path, stream)
           s += "ch b %s \n" %time_before
           s += "ch nzhour %s nzmin %s nzsec %s \n" %(t0.hour, t0.minute, t0.second)
-          s += "ch nzmsec %s \n" %str(t0.microsecond)[0:3]
+          s += "ch nzmsec %s \n" %t0.microsecond/1000
           s += "ch evlo %s evla %s evdp 5 \n" %(lon, lat)
           s += "ch mag %s \n" %mag
           s += "w %s \n" %os.path.join(out_dir, fname)
