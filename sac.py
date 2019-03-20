@@ -79,7 +79,7 @@ def ch_event(fpath, evlo, evla, evdp, mag, tp=-1, ts=-1):
 
 
 
-""" Format CHanging
+""" Format Changing
 seed to sac
 miniseed/ mseed to sac
 with IRIS tool: mseed2sac & rdseed
