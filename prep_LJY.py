@@ -22,8 +22,8 @@ def get_outpath(root_dir, net, sta, chn, ts):
 
 
 dst_root = '/data/LJY_SAC/'
-src_dirs = sorted(glob.glob('/data/LJY_raw/LJ09/*')) # net/sta
-"""
+src_dirs = sorted(glob.glob('/data/LJY_raw/*/*')) # net/sta
+
 # 1. mseed2sac + mv to dst_dir
 for src_dir in src_dirs:
     print('processing {}'.format(src_dir))
@@ -79,9 +79,9 @@ for src_dir in src_dirs:
     for fname in todel:
         os.unlink(fname)
 
-"""
+
 # 2. merge sac files in dst_dir
-dst_dirs = glob.glob(os.path.join(dst_root, 'LJ09/*/*/*/*')) # net/sta/year/month/day
+dst_dirs = glob.glob(os.path.join(dst_root, '*/*/*/*/*')) # net/sta/year/month/day
 for dst_dir in dst_dirs:
     os.chdir(dst_dir)
     sac_files = glob.glob('*.SAC')
