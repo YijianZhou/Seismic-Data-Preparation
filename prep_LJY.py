@@ -96,5 +96,5 @@ for dst_dir in dst_dirs:
         sac.merge(tomerge, fname)
 
     for fname in todel:
-        os.unlink(fname)
+        if os.path.exists(fname): os.unlink(fname)
 
