@@ -8,7 +8,7 @@ cut sac trace
 merge traces
 """
 
-def cut(fpath, b, e, outpath):
+def cut(fpath, b, e, out_path):
     """ set [t0, t1] --> cut stream
     faster in long continuous records
     b, e: second relative to hdeader b
@@ -19,14 +19,15 @@ def cut(fpath, b, e, outpath):
     s += "cut %s %s \n" %(b, e)
     s += "r %s \n" %(fpath)
     s += "ch allt (0-&1,b&) iztype IB \n"
-    s += "w %s \n" %(outpath)
+    s += "w %s \n" %(out_path)
     s += "q \n"
     p.communicate(s.encode())
 
 
-def merge(fpaths, outpath):
+def merge(fpaths, out_path):
     """ merge sac files
     """
+    if len(fpaths)==1: os.rename(fpaths[0], out_path); return
     p = subprocess.Popen(['sac'], stdin=subprocess.PIPE)
     s = "wild echo off \n"
     print('merge sac files {}'.format(fpaths))
@@ -34,7 +35,7 @@ def merge(fpaths, outpath):
         if i==0: s += "r %s \n" %(fpath)
         else:    s += "r more %s \n" %(fpath)
     s += "merge g z o a \n"
-    s += "w %s \n" %(outpath)
+    s += "w %s \n" %(out_path)
     s += "q \n"
     p.communicate(s.encode())
 
