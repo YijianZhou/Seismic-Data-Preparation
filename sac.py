@@ -63,7 +63,7 @@ def ch_sta(fpath, knetwk, kstnm, stlo, stla, stel):
     p.communicate(s.encode())
 
 
-def ch_event(fpath, evlo, evla, evdp, mag, tp=-1, ts=-1):
+def ch_event(fpath, evlo, evla, evdp, mag, tn=[]):
     """ change event header by SAC
     """
     p = subprocess.Popen(['sac'], stdin=subprocess.PIPE)
@@ -72,8 +72,8 @@ def ch_event(fpath, evlo, evla, evdp, mag, tp=-1, ts=-1):
     s += "ch evlo %s evla %s \n" %(evlo, evla)
     s += "ch evdp %s \n" %(evdp)
     s += "ch mag %s \n" %(mag)
-    if tp>0: s += "ch t0 %s \n" %(tp)
-    if ts>0: s += "ch t1 %s \n" %(ts)
+    for i,ti in enumerate(tn): 
+        s += "ch t%s %s \n" %(i,ti)
     s += "wh \n"
     s += "q \n"
     p.communicate(s.encode())
