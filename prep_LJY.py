@@ -1,6 +1,6 @@
 import os, glob
 import sys
-sys.path.append('/home/zhouyj/Documents/mycode')
+sys.path.append('/home/zhouyj/Documents/data_prep')
 from obspy import read, UTCDateTime
 import sac
 
@@ -17,12 +17,13 @@ def get_outpath(root_dir, net, sta, chn, ts):
                       ''.join([str(ts.hour).zfill(2),
                                str(ts.minute).zfill(2),
                                str(ts.second).zfill(2)]),
-                      chn, 'SAC'])
+                      chn, 'sac'])
     return os.path.join(out_dir, fname)
 
 
 dst_root = '/data/LJY_SAC/'
-src_dirs = sorted(glob.glob('/data/LJY_raw/*/*')) # net/sta
+net = 'LJ04'
+src_dirs = sorted(glob.glob('/data/LJY_raw/raw2/%s/*'%net)) # net/sta
 
 # 1. mseed2sac + mv to dst_dir
 for src_dir in src_dirs:
@@ -81,16 +82,17 @@ for src_dir in src_dirs:
 
 
 # 2. merge sac files in dst_dir
-dst_dirs = glob.glob(os.path.join(dst_root, '*/*/*/*/*')) # net/sta/year/month/day
+dst_dirs = glob.glob(os.path.join(dst_root, '%s/*/*/*/*'%net)) # net/sta/year/month/day
 for dst_dir in dst_dirs:
     os.chdir(dst_dir)
-    sac_files = glob.glob('*.SAC')
+    sac_files = glob.glob('*.sac') # cutted, processed SAC remains
     todel = sac_files
     print('merge streams: {}'.format(dst_dir))
 
     # merge
     for chn in ['BHE','BHN','BHZ']:
         tomerge = glob.glob("*.%s.*" %chn)
+        if len(tomerge)==0: continue
         net, sta, year, jday, time, chn, _ = tomerge[0].split('.')
         fname = "%s.%s.%s.%s.%s.SAC" %(net, sta, year, jday, chn)
         sac.merge(tomerge, fname)
