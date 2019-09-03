@@ -1,20 +1,10 @@
-""" rt2msd before running this script
-In windows powershell, ex
-  $env:Path = "D:\OneDrive - pku.edu.cn\学术\Package\程序包\rt_mseed";
-  $dirs = ls G:\201603-201702\J03\2016*\*\1;
-  for($i=0; $i -le $dirs.count-1; $i++){
-    cd $dirs[$i];
-    $files = ls;    
-    for($j=0; $j -le $files.count-1; $j++) {RT_MSEED.EXE $files[$j].Name}
-  }
-mseed2sac & merge can execute seperatly
-do not parallelly merge
-"""
 import os, sys, glob
 sys.path.append('/home/zhouyj/Documents/data_prep')
 import obspy
 from obspy import read, UTCDateTime
 import sac
+import warnings
+warnings.filterwarnings("ignore")
 
 def date2dir(date):
     yr  = str(date.year)
@@ -24,66 +14,69 @@ def date2dir(date):
 
 
 # i/o paths
-#raw_dirs = sorted(glob.glob('/data2/201508-201603/*/2016*/*/1')) # root/sta/date/(
-raw_dirs = sorted(glob.glob('/data2/201603-201702/*/2016*/*/1')) # root/sta/date/(
-sac_root = '/data/XJ_SAC/XLS/'
+raw_dirs = sorted(glob.glob('/data2/201508-201603/*/2016*/*/1')) # root/sta/date/das/1/rt_files
+#raw_dirs = sorted(glob.glob('/data2/201603-201702/*/2016*/*/1')) # root/sta/date/das/1/rt_files
+sac_root = '/data/XJ_SAC/XLS'
 start_date = UTCDateTime(2016,1,1)
 end_date   = UTCDateTime(2017,1,1)
-
+net = 'XLS'
+chn_seq = ['HHZ','HHN','HHE']
+extension = '_006DDD00'
 
 # 1. msd (raw dir) to sac (sac dir): r raw dir & w sac dir
 for raw_dir in raw_dirs:
     if not os.path.isdir(raw_dir): continue
     os.chdir(raw_dir)
     date = UTCDateTime(raw_dir.split('/')[-3])
+    sta = raw_dir.split('/')[-2]
     if date<start_date or date>end_date: continue
     print('processing %s' %raw_dir)
-    raw_e = sorted(glob.glob('*_3.msd'))
-    raw_n = sorted(glob.glob('*_2.msd'))
-    raw_z = sorted(glob.glob('*_1.msd'))
-    for i,fnames in enumerate([raw_e, raw_n, raw_z]):
-      for fname in fnames:
-        print('read %s'%fname)
-        try: st = read(fname)
-        except: obspy.io.segy.segy.SEGYTraceReadingError; print('bad data!'); continue
-        header = st[0].stats
+    rt_files = sorted(glob.glob('*%s'%extension))
+    for rt_file in rt_files:
+      print('read %s' %rt_file)
+      try: st = read(rt_file)
+      except: obspy.io.segy.segy.SEGYTraceReadingError; print('bad data!'); continue
+      if len(st)!=3: print('channel error!'); continue
+      for idx,tr in enumerate(st):
+        header = tr.stats
         t0, t1 = header.starttime, header.endtime
-        sta = header.station
         # set out path
         out_dir = os.path.join(sac_root, sta, date2dir(date))
         if not os.path.exists(out_dir): os.makedirs(out_dir)
-        dtime = ''.join(date2dir(date).split('/'))
-        chn = ['HHE','HHN','HHZ'][i]
+        dtime = ''.join(date2dir(date).split('/')) + rt_file[0:2]
+        chn = chn_seq[idx]
         out_name = '%s.%s.%s.sac'%(sta, dtime, chn)
         out_path = os.path.join(out_dir, out_name)
-        st.slice(date, date+86400).write(out_path)
+        tr.slice(date, date+86400).write(out_path)
         if t0 < date:
-            st0 = st.slice(t0, date)
+            tr0 = tr.slice(t0, date)
             out_dir0 = os.path.join(sac_root, sta, date2dir(date-86400))
             if not os.path.exists(out_dir0): os.makedirs(out_dir0)
             out_name0 = 'aug0.' + out_name
             out_path0 = os.path.join(out_dir0, out_name0)
-            st0.write(out_path0)
+            tr0.write(out_path0)
         if t1 > date+86400: 
-            st1 = st.slice(date+86400, t1)
+            tr1 = tr.slice(date+86400, t1)
             out_dir1 = os.path.join(sac_root, sta, date2dir(date+86400))
             if not os.path.exists(out_dir1): os.makedirs(out_dir1)
             out_name1 = 'aug1.' + out_name
             out_path1 = os.path.join(out_dir1, out_name1)
-            st1.write(out_path1)
+            tr1.write(out_path1)
 
 
 # 2. merge sac files in sac dir
+""" This can be done seperatly
+"""
 sac_dirs = sorted(glob.glob(os.path.join(sac_root, '*/*/*/*')))
 for sac_dir in sac_dirs:
     print('merge sac files in %s' %sac_dir)
     os.chdir(sac_dir)
-    info = os.getcwd().split('/')
-    sta = info[-4]
-    date = info[-3] + info[-2] + info[-1]
-    sac.merge(glob.glob('*.HHE.sac'), 'XLS.%s.%s.HHE.SAC' %(sta, date))
-    sac.merge(glob.glob('*.HHN.sac'), 'XLS.%s.%s.HHN.SAC' %(sta, date))
-    sac.merge(glob.glob('*.HHZ.sac'), 'XLS.%s.%s.HHZ.SAC' %(sta, date))
+    codes = os.getcwd().split('/')
+    sta = codes[-4]
+    date = codes[-3] + codes[-2] + codes[-1]
+    sac.merge(glob.glob('*.%s.*'%chn_seq[0]), '%s.%s.%s.%s.SAC' %(net, sta, date, chn_seq[0]))
+    sac.merge(glob.glob('*.%s.*'%chn_seq[1]), '%s.%s.%s.%s.SAC' %(net, sta, date, chn_seq[1]))
+    sac.merge(glob.glob('*.%s.*'%chn_seq[2]), '%s.%s.%s.%s.SAC' %(net, sta, date, chn_seq[2]))
     # delete sac segments
     todel = glob.glob('*.sac')
     for fname in todel: os.unlink(fname)
