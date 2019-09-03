@@ -23,7 +23,7 @@ net = 'XLS'
 chn_seq = ['HHZ','HHN','HHE']
 extension = '_006DDD00'
 
-# 1. msd (raw dir) to sac (sac dir): r raw dir & w sac dir
+# 1. reftek (raw dir) to sac (sac dir): r raw dir & w sac dir
 for raw_dir in raw_dirs:
     if not os.path.isdir(raw_dir): continue
     os.chdir(raw_dir)
