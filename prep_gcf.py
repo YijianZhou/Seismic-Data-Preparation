@@ -56,19 +56,15 @@ for raw_dir in raw_dirs:
         out_path = os.path.join(out_dir, out_name)
         tr.slice(date, date+86400).write(out_path)
         if t0 < date:
-            tr0 = tr.slice(t0, date)
-            out_dir0 = os.path.join(sac_root, sta, date2dir(date-86400))
-            if not os.path.exists(out_dir0): os.makedirs(out_dir0)
-            out_name0 = 'aug0.' + out_name
-            out_path0 = os.path.join(out_dir0, out_name0)
-            tr0.write(out_path0)
+            out_dir = os.path.join(sac_root, sta, date2dir(date-86400))
+            if not os.path.exists(out_dir): os.makedirs(out_dir)
+            out_path = os.path.join(out_dir, out_name)
+            tr = tr.slice(t0, date).write(out_path)
         if t1 > date+86400: 
-            tr1 = tr.slice(date+86400, t1)
-            out_dir1 = os.path.join(sac_root, sta, date2dir(date+86400))
-            if not os.path.exists(out_dir1): os.makedirs(out_dir1)
-            out_name1 = 'aug1.' + out_name
-            out_path1 = os.path.join(out_dir1, out_name1)
-            tr1.write(out_path1)
+            out_dir = os.path.join(sac_root, sta, date2dir(date+86400))
+            if not os.path.exists(out_dir): os.makedirs(out_dir)
+            out_path = os.path.join(out_dir, out_name)
+            tr = tr.slice(date+86400, t1).write(out_path)
 
 
 # 2. merge sac files in sac dir
