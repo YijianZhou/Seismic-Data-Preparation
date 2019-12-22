@@ -1,4 +1,3 @@
-
 import os
 import glob
 os.putenv("SAC_DISPLAY_COPYRIGHT", '0')
