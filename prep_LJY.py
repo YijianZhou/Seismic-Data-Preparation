@@ -1,6 +1,6 @@
 import os, glob
 import sys
-sys.path.append('/home/zhouyj/Documents/data_prep')
+sys.path.append('/home/zhouyj/software/data_prep')
 from obspy import read, UTCDateTime
 import sac
 
@@ -99,4 +99,3 @@ for dst_dir in dst_dirs:
 
     for fname in todel:
         if os.path.exists(fname): os.unlink(fname)
-
