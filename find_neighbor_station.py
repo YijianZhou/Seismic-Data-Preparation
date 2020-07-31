@@ -2,7 +2,7 @@ import numpy as np
 
 # i/o paths
 fsta = 'input/xls_all.sta'
-fout = open('output/xls_same_loc.sta','w')
+fout = open('output/xls_neighbor_stations.txt','w')
 # params
 max_dist = 5 #km
 
@@ -43,11 +43,11 @@ for i in range(num_sta-1):
             corr_mat[corr_mat[:,nbr]==1, nbr] = 0
         clusters[-1] += new_nbrs
         nbrs = new_nbrs
+clusters = [np.unique(cluster) for cluster in clusters]
 print('%s clusters found'%len(clusters))
 
 # write sta clusts
 for i,cluster in enumerate(clusters):
-    fout.write('# %sth station location \n'%i)
-    cluster = np.unique(cluster)
+    fout.write('# %sth station location \n'%(i+1))
     for line_idx in cluster: fout.write(line_list[line_idx])
 fout.close()
