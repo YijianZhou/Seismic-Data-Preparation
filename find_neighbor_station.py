@@ -48,5 +48,6 @@ print('%s clusters found'%len(clusters))
 # write sta clusts
 for i,cluster in enumerate(clusters):
     fout.write('# %sth station location \n'%i)
+    cluster = np.unique(cluster)
     for line_idx in cluster: fout.write(line_list[line_idx])
 fout.close()
