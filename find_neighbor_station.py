@@ -28,6 +28,12 @@ for i in range(num_sta-1):
 
 print('clustering')
 clusters = []
+# find isolated events
+for i in range(num_sta-1):
+    nbrs  = list(np.where(corr_mat[i]==1)[0])
+    nbrs += list(np.where(corr_mat[:,i]==1)[0])
+    if len(nbrs)==0: clusters.append([i]) # save the idx
+
 for i in range(num_sta-1):
     nbrs  = list(np.where(corr_mat[i]==1)[0])
     nbrs += list(np.where(corr_mat[:,i]==1)[0])
