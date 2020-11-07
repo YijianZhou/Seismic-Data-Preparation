@@ -1,22 +1,8 @@
-# Preprocess-Raw-Seismic-Data
-scripts for preprocessing raw data
+# Seismic-Data-Preprocess
+scripts for preprocessing raw seismic data <br>
 
-Seismic data are usually transmitted in miniseed format, but not all programs can process miniseed files. Also, data need to have a uniform archiving for easy access.
-
-In consideration of these needs, we implemented a set of python scripts for the following functions:
-
-1. mseed2sac & seed2sac
-
-2. merge
-
-3. change header
-
-4. slice into days
-
-5. archive (mkdir + mv)
-
-sac.py utilize python subprocess to call sac & mseed2sac & rdseed
-
-prep_* is my scripts for preprocessing different data
-
-plot_continuity.py can visualize the data continuity
+Functions include: <br>
+1. Download public data <br>
+2. Cut event windows <br>
+3. Format transform <br>
+4. Preprocess & Archive raw data (cut/slice/trim, move & merge) <br>
