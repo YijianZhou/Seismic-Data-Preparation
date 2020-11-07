@@ -1,4 +1,4 @@
-""" Cut event waveforms
+""" Cut event waveforms with SAC
 """
 import os, sys, glob, shutil
 sys.path.append('/home/zhouyj/software/data_prep')
