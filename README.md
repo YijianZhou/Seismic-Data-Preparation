@@ -6,3 +6,4 @@ Functions include: <br>
 2. Cut event windows <br>
 3. Format transform <br>
 4. Preprocess & Archive raw data (cut/slice/trim, move & merge) <br>
+5. Visualization of data info <br>
