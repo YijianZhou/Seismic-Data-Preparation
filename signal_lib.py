@@ -1,5 +1,7 @@
 """ Signal processing library
 """
+import numpy as np
+from obspy import UTCDateTime
 
 def preprocess(stream, samp_rate, freq_band):
     # time alignment
