@@ -1,18 +1,9 @@
 import os
+from obspy import read, UTCDateTime
 import subprocess
 os.putenv("SAC_DISPLAY_COPYRIGHT", '0')
 
-""" Data Process
-get data
-cut sac trace
-merge traces
-"""
-
 def cut(fpath, b, e, outpath, fillz=False):
-    """ set [t0, t1] --> cut stream
-    faster in long continuous records
-    b, e: second relative to header b
-    """
     p = subprocess.Popen(['sac'], stdin=subprocess.PIPE)
     s = "wild echo off \n"
     if fillz: s += "cuterr fillz \n"
@@ -24,9 +15,32 @@ def cut(fpath, b, e, outpath, fillz=False):
     p.communicate(s.encode())
 
 
+def obspy_trim(stream, t0, t1, zfill=False):
+    if not zfill: st = stream.copy().trim(t0, t1)
+    if zfill: st = stream.copy().trim(t0, t1, pad=True, fill_value=0)
+    for tr in st:
+        tr.stats.sac.nzyear = t0.year
+        tr.stats.sac.nzjday = t0.julday
+        tr.stats.sac.nzhour = t0.hour
+        tr.stats.sac.nzmin = t0.minute
+        tr.stats.sac.nzsec = t0.day
+        tr.stats.sac.nzmsec = t0.microsecond / 1e3
+    return st
+
+
+def obspy_slice(stream, t0, t1):
+    st = stream.slice(t0, t1)
+    for tr in st:
+        tr.stats.sac.nzyear = t0.year
+        tr.stats.sac.nzjday = t0.julday
+        tr.stats.sac.nzhour = t0.hour
+        tr.stats.sac.nzmin = t0.minute
+        tr.stats.sac.nzsec = t0.day
+        tr.stats.sac.nzmsec = t0.microsecond / 1e3
+    return st
+
+
 def merge(fpaths, out_path):
-    """ merge sac files
-    """
     num_files = len(fpaths)
     if num_files==0: return
     if num_files==1: os.rename(fpaths[0], out_path); return
@@ -55,14 +69,7 @@ def merge(fpaths, out_path):
     p.communicate(s.encode())
 
 
-""" Change Header
-station header
-event header
-"""
-
 def ch_sta(fpath, knetwk=None, kstnm=None, kcmpnm=None, stlo=0, stla=0, stel=0):
-    """ change station header by SAC
-    """
     p = subprocess.Popen(['sac'], stdin=subprocess.PIPE)
     s = "wild echo off \n"
     print('change station header for {}: {},{},{},{},{},{}'\
@@ -79,8 +86,6 @@ def ch_sta(fpath, knetwk=None, kstnm=None, kcmpnm=None, stlo=0, stla=0, stel=0):
 
 
 def ch_event(fpath, evla, evlo, evdp, mag, tn=[]):
-    """ change event header by SAC
-    """
     p = subprocess.Popen(['sac'], stdin=subprocess.PIPE)
     s = "wild echo off \n"
     s += "rh %s \n" %(fpath)
@@ -94,16 +99,10 @@ def ch_event(fpath, evla, evlo, evdp, mag, tn=[]):
     p.communicate(s.encode())
 
 
-"""
-seed to sac
-miniseed/ mseed to sac
-with IRIS tool: mseed2sac & rdseed
-"""
-
 def seed2sac(fpath, out_dir=None):
     if out_dir: subprocess.call(['rdseed', '-dfq', fpath, out_dir])
     else: subprocess.call(['rdseed', '-df', fpath])
 
+
 def mseed2sac(fpath):
     subprocess.call(['mseed2sac', '-O', fpath])
-
