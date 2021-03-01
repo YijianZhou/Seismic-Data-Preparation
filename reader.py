@@ -20,6 +20,19 @@ def read_pha(fpha):
     return pha_list
 
 
+# read station file in PAD format
+def read_pad_fsta(fsta):
+    print('reading %s'%fsta)
+    f=open(fsta); lines=f.readlines(); f.close()
+    sta_dict = {}
+    for line in lines:
+        codes = line.split(',')
+        net_sta = codes[0]
+        lat, lon, ele, gain = [float(code) for code in codes[1:5]]
+        sta_dict[net_sta] = [lat, lon, ele, gain]
+    return sta_dict
+
+
 # get data dict, given path structure
 def get_data_dict(date, data_dir):
     # get data paths
