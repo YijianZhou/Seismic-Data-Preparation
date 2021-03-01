@@ -2,6 +2,8 @@
 """
 import numpy as np
 from obspy import UTCDateTime
+from scipy.signal import correlate
+
 
 def preprocess(stream, samp_rate, freq_band):
     # time alignment
@@ -35,3 +37,18 @@ def calc_dist_km(lat, lon):
     dx = cos_lat * (lon[1] - lon[0])
     dy = lat[1] - lat[0]
     return 111*(dx**2 + dy**2)**0.5
+
+
+def calc_cc(data, temp, norm_data=None, norm_temp=None):
+    ntemp, ndata = len(temp), len(data)
+    if ntemp>ndata: return [0]
+    if not norm_temp:
+        norm_temp = np.sqrt(np.sum(temp**2))
+    if not norm_data:
+        data_cum = np.cumsum(data**2)
+        norm_data = np.sqrt(data_cum[ntemp:] - data_cum[:-ntemp])
+    cc = correlate(data, temp, mode='valid')[1:]
+    cc /= norm_data * norm_temp
+    cc[np.isinf(cc)] = 0.
+    cc[np.isnan(cc)] = 0.
+    return cc
