@@ -19,12 +19,19 @@ def preprocess(stream, samp_rate, freq_band):
     if resamp_factor!=1: st = st.interpolate(samp_rate)
     # filter
     st = st.detrend('demean').detrend('linear').taper(max_percentage=0.05, max_length=10.)
-    flt_type, freq_rng = freq_band
-    if flt_type=='highpass':
-        return st.filter(flt_type, freq=freq_rng).normalize()
-    if flt_type=='bandpass':
-        return st.filter(flt_type, freqmin=freq_rng[0], freqmax=freq_rng[1]).normalize()
+    freq_min, freq_max = freq_band
+    if freq_min and freq_max:
+        return st.filter('bandpass', freqmin=freq_min, freqmax=freq_max)
+    elif not freq_max and freq_min:
+        return st.filter('highpass', freq=freq_min)
+    elif not freq_min and freq_max:
+        return st.filter('lowpass', freq=freq_max)
+    else:
+        print('filter type not supported!'); return []
 
 
-
-
+def calc_dist_km(lat, lon):
+    cos_lat = np.cos(np.mean(lat) * np.pi / 180)
+    dx = cos_lat * (lon[1] - lon[0])
+    dy = lat[1] - lat[0]
+    return 111*(dx**2 + dy**2)**0.5
