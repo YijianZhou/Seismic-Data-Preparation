@@ -5,18 +5,18 @@ sys.path.append('/home/zhouyj/software/data_prep')
 import numpy as np
 import multiprocessing as mp
 from obspy import read, UTCDateTime
-from reader import read_pad_pha, get_xq_data, dtime2str
+from reader import read_pad_pha, get_data_dict, dtime2str
 import sac
 
 
 # i/o paths
-data_dir = '/data1/Gorkha_raw'
-fpha = 'output/xq/xq_pad.pha'
-out_root = '/data3/bigdata/zhouyj/Gorkha_events'
+data_dir = '/data/Example_data'
+fpha = 'input/example_pad.pha'
+out_root = '/data3/bigdata/zhouyj/Example_events'
 # cut params
 num_workers = 10
 event_win = [10, 30] # sec before & after P
-get_data_dict = get_xq_data
+get_data_dict = get_data_dict
 read_pha = read_pad_pha
 pha_list = read_pha(fpha)
 
@@ -50,7 +50,6 @@ def cut_event(event_id):
             sac.ch_event(out_paths[i], lon, lat, dep, mag, [t0,t1])
 
 # cut all events data
-#for i in range(len(pha_list)): cut_event(i)
 pool = mp.Pool(num_workers)
 pool.map_async(cut_event, range(len(pha_list)))
 pool.close()

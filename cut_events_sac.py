@@ -5,19 +5,19 @@ sys.path.append('/home/zhouyj/software/data_prep')
 import numpy as np
 import multiprocessing as mp
 from obspy import read, UTCDateTime
-from reader import read_rc_pha, get_rc_data, dtime2str
+from reader import read_fpha, get_data_dict, dtime2str
 import sac
 
 
 # i/o paths
-data_dir = '/data2/Ridgecrest/*/*'
-fpha = 'output/rc_scsn_pha.csv'
-out_root = '/data3/bigdata/zhouyj/RC_events'
+data_dir = '/data/Example_data'
+fpha = 'output/example_pha.csv'
+out_root = '/data3/bigdata/zhouyj/Example_events'
 # cut params
-num_workers =10
+num_workers = 10
 event_win = [10, 20] # sec before & after P
-get_data_dict = get_rc_data
-read_pha = read_rc_pha
+get_data_dict = get_data_dict
+read_pha = read_fpha
 pha_list = read_pha(fpha)
 
 def cut_event(event_id):
@@ -53,4 +53,3 @@ pool = mp.Pool(num_workers)
 pool.map_async(cut_event, range(len(pha_list)))
 pool.close()
 pool.join()
-
