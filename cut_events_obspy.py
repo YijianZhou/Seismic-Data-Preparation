@@ -5,19 +5,19 @@ sys.path.append('/home/zhouyj/software/data_prep')
 import numpy as np
 import multiprocessing as mp
 from obspy import read, UTCDateTime
-from reader import read_pad_pha, get_data_dict, dtime2str
+from reader import read_pal_pha, get_data_dict, dtime2str
 import sac
 
 
 # i/o paths
 data_dir = '/data/Example_data'
-fpha = 'input/example_pad.pha'
+fpha = 'input/example_pal.pha'
 out_root = '/data3/bigdata/zhouyj/Example_events'
 # cut params
 num_workers = 10
 event_win = [10, 30] # sec before & after P
 get_data_dict = get_data_dict
-read_pha = read_pad_pha
+read_pha = read_pal_pha
 pha_list = read_pha(fpha)
 
 def cut_event(event_id):
