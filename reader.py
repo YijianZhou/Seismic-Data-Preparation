@@ -14,8 +14,8 @@ def read_fpha(fpha):
             event_loc = [ot, lat, lon, dep, mag]
             pha_list.append([event_loc, {}])
         else:
-            net_sta = '.'.join(codes[0:2])
-            tp, ts = [UTCDateTime(code) for code in codes[2:4]]
+            net_sta = codes[0]
+            tp, ts = [UTCDateTime(code) for code in codes[1:3]]
             pha_list[-1][-1][net_sta] = [tp, ts]
     return pha_list
 
