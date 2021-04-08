@@ -8,7 +8,6 @@ from obspy import read, UTCDateTime
 from reader import read_fpha, get_data_dict, dtime2str
 import sac
 
-
 # i/o paths
 data_dir = '/data/Example_data'
 fpha = 'output/example_pha.csv'
@@ -28,25 +27,21 @@ def cut_event(event_id):
     event_name = dtime2str(ot)
     event_dir = os.path.join(out_root, event_name)
     if not os.path.exists(event_dir): os.makedirs(event_dir)
-
     # cut event
     print('cutting {}'.format(event_name))
     for net_sta, [tp, ts] in pick_dict.items():
-        b = tp - UTCDateTime(ot.date) - event_win[0]
-        if net_sta not in data_dict: continue
-        data_paths = data_dict[net_sta]
-        chn_codes = [data_path.split('.')[-2] for data_path in data_paths]
-        out_paths = [os.path.join(event_dir,'%s.%s'%(net_sta,chn)) for chn in chn_codes]
+      if net_sta not in data_dict: continue
+      for data_path in data_dict[net_sta]:
+        b = tp - read(data_path)[0].stats.starttime - event_win[0]
+        chn_code = data_path.split('.')[-2]
+        out_path = os.path.join(event_dir,'%s.%s'%(net_sta,chn_code))
         # cut event
-        sac.cut(data_paths[0], b, b+event_win[1], out_paths[0])
-        sac.cut(data_paths[1], b, b+event_win[1], out_paths[1])
-        sac.cut(data_paths[2], b, b+event_win[1], out_paths[2])
+        sac.cut(data_path, b, b+event_win[1], out_path)
         # write header
-        t0 = event_win[0]
-        t1 = ts - tp + event_win[0] if ts else ts
-        sac.ch_event(out_paths[0], lon, lat, dep, mag, [t0,t1])
-        sac.ch_event(out_paths[1], lon, lat, dep, mag, [t0,t1])
-        sac.ch_event(out_paths[2], lon, lat, dep, mag, [t0,t1])
+        tn = {}
+        tn['t0'] = event_win[0]
+        if ts: tn['t1'] = ts - tp + event_win[0]
+        sac.ch_event(out_path, lat, lon, dep, mag, tn)
 
 # cut all events data
 pool = mp.Pool(num_workers)
