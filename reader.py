@@ -10,7 +10,7 @@ def read_fpha(fpha):
         codes = line.split(',')
         if len(codes[0])>10:
             ot = UTCDateTime(codes[0])
-            lat, lon, dep, mag = [float(code) for code in codes[1:]]
+            lat, lon, dep, mag = [float(code) for code in codes[1:5]]
             event_loc = [ot, lat, lon, dep, mag]
             pha_list.append([event_loc, {}])
         else:
