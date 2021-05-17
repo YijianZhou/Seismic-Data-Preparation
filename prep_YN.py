@@ -11,12 +11,6 @@ def date2dir(date):
     return os.path.join(year, mon, day)
 
 # i/o paths
-#raw_dirs = sorted(glob.glob('/data2/ZSY_raw/20161125/YN/*'))
-#raw_dirs = sorted(glob.glob('/data2/ZSY_raw/20170327/YN/*'))
-#raw_dirs = sorted(glob.glob('/data2/ZSY_raw/20171226/YN/*'))
-#raw_dirs = sorted(glob.glob('/data2/ZSY_raw/20180331/YN/*'))
-#raw_dirs = sorted(glob.glob('/data2/ZSY_raw/20180918/YN/*'))
-#raw_dirs = sorted(glob.glob('/data2/ZSY_raw/20180930/YN/*'))
 raw_dirs = sorted(glob.glob('/data2/ZSY_raw/20190218/YN/*'))
 sac_root = '/data2/ZSY_SAC/YN'
 
