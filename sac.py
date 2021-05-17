@@ -85,15 +85,16 @@ def ch_sta(fpath, knetwk=None, kstnm=None, kcmpnm=None, stlo=0, stla=0, stel=0):
     p.communicate(s.encode())
 
 
-def ch_event(fpath, evla, evlo, evdp, mag, tn=[]):
+def ch_event(fpath, evla=None, evlo=None, evdp=None, mag=None, tn={}):
     p = subprocess.Popen(['sac'], stdin=subprocess.PIPE)
     s = "wild echo off \n"
     s += "rh %s \n" %(fpath)
-    s += "ch evlo %s evla %s \n" %(evlo, evla)
-    s += "ch evdp %s \n" %(evdp)
-    s += "ch mag %s \n" %(mag)
-    for i,ti in enumerate(tn):
-        s += "ch t%s %s \n" %(i,ti)
+    if evlo: s += "ch evlo %s \n" %evlo
+    if evla: s += "ch evla %s \n" %evla
+    if evdp: s += "ch evdp %s \n" %(evdp)
+    if mag: s += "ch mag %s \n" %(mag)
+    for ti_code,ti in tn.items():
+        s += "ch %s %s \n" %(ti_code,ti)
     s += "wh \n"
     s += "q \n"
     p.communicate(s.encode())
