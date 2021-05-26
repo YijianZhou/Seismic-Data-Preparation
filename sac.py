@@ -101,8 +101,18 @@ def ch_event(fpath, evla=None, evlo=None, evdp=None, mag=None, tn={}):
 
 
 def seed2sac(fpath, out_dir=None):
-    if out_dir: subprocess.call(['rdseed', '-dfq', fpath, out_dir])
-    else: subprocess.call(['rdseed', '-df', fpath])
+    if not out_dir: subprocess.call(['rdseed', '-df', fpath])
+    else: subprocess.call(['rdseed', '-df', fpath, '-q', out_dir])
+
+
+def get_resp(fpath, out_dir=None):
+    if not out_dir: subprocess.call(['rdseed', '-fR', fpath])
+    else: subprocess.call(['rdseed', '-fR', fpath, '-q', out_dir])
+
+
+def get_pz(fpath, out_dir=None):
+    if not out_dir: subprocess.call(['rdseed', '-fp', fpath])
+    else: subprocess.call(['rdseed', '-fp', fpath, '-q', out_dir])
 
 
 def mseed2sac(fpath):
