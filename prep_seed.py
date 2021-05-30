@@ -1,75 +1,70 @@
 import os, sys, glob
 sys.path.append('/home/zhouyj/software/data_prep')
-import obspy
-from obspy import read, UTCDateTime
 import sac
-
-def date2dir(date):
-    year = str(date.year)
-    mon  = str(date.month).zfill(2)
-    day  = str(date.day).zfill(2)
-    return os.path.join(year, mon, day)
+from obspy import read, UTCDateTime
 
 # i/o paths
-raw_dirs = sorted(glob.glob('/data2/ZSY_raw/20190218/YN/*'))
-sac_root = '/data2/ZSY_SAC/YN'
-
-# 1. raw dir: seed2sac
-for raw_dir in raw_dirs:
-  # go to raw dir
-  os.chdir(raw_dir)
-  print('processing %s'%raw_dir)
-  fnames = glob.glob('*.seed')
-  for fname in fnames:
-    print('seed2sac: %s'%fname)
-    date, net, sta, _ = fname.split('.')
-    year, mon, day = date[0:4], date[4:6], date[6:8]
-    out_dir = os.path.join(sac_root, sta, year, mon, day)
-    if not os.path.exists(out_dir): os.makedirs(out_dir)
-    sac.seed2sac(fname, out_dir)
+raw_dir = '/data/SEED_raw'
+seed_paths = glob.glob(os.path.join(raw_dir, '*.seed'))
+sac_root = '/data/SEED_SAC'
+if not os.path.exists(sac_root): os.makedirs(sac_root)
 
 
-# 2. check date
-sac_dirs = sorted(glob.glob(os.path.join(sac_root, 'KMI/*/*/*'))) # sta/year/mon/day
-for sac_dir in sac_dirs:
-  print('check %s'%sac_dir)
-  codes = sac_dir.split('/')
-  sta = codes[-4]
-  date0 = UTCDateTime(''.join(codes[-3:]))
-  date1 = date0 + 86400
-  os.chdir(sac_dir)
-  fnames = glob.glob('*.D.SAC')
-  for fname in fnames:
-    head = read(fname, headonly=True)[0].stats
-    t0, t1 = head.starttime, head.endtime
-    if date0<t0 and date1>t1: continue
-    if t0<date0:
-        out_dir = os.path.join(sac_root, sta, date2dir(t0))
+# 1. seed2sac
+for seed_path in seed_paths:
+    sac.seed2sac(seed_path, sac_root)
+
+
+# 2. cut sac into day_dirs
+raw_paths = sorted(glob.glob(os.path.join(sac_root, '*.SAC')))
+for raw_path in raw_paths:
+    print('cutting %s'%raw_path)
+    st = read(raw_path, headonly=True)
+    if len(st)!=1: print('false number of traces'); continue
+    header = st[0].stats
+    start_time, end_time = header.starttime, header.endtime
+    nsec = end_time - start_time
+    start_date = UTCDateTime(start_time.date)
+    end_date = UTCDateTime(end_time.date) + 86400
+    num_days = int((end_date - start_date) / 86400)
+    net, sta, chn = header.network, header.station, header.channel
+    for day_idx in range(num_days):
+        t0 = start_date + 86400*day_idx
+        t1 = start_date + 86400*(day_idx+1)
+        date_code = ''.join(str(t0.date).split('-'))
+        out_dir = os.path.join(sac_root, date_code)
         if not os.path.exists(out_dir): os.makedirs(out_dir)
-        out_path = os.path.join(out_dir, 'aug.'+fname)
-        sac.cut(fname, 0, date0-t0, out_path)
-    if t1>date1:
-        out_dir = os.path.join(sac_root, sta, date2dir(t1))
-        if not os.path.exists(out_dir): os.makedirs(out_dir)
-        out_path = os.path.join(out_dir, 'aug.'+fname)
-        sac.cut(fname, date1-t0, t1-t0, out_path)
-    if date1<t0 or date0>t1: os.unlink(fname)
-    else: sac.cut(fname, date0-t0, date1-t0, fname)
+        out_name = '%s.%s.%s.%s.sac'%(net,sta,start_time,chn)
+        out_path = os.path.join(out_dir, out_name)
+        b = max(0, t0 - start_time)
+        e = min(nsec, t1 - start_time)
+        sac.cut(raw_path, b, e, out_path)
+for raw_path in raw_paths: os.unlink(raw_path)
 
 
-# 3. merge in sac dir
-sac_dirs = sorted(glob.glob(os.path.join(sac_root, 'KMI/201[8-9]/*/*')))
-for sac_dir in sac_dirs:
-    print('merge sac files in %s' %sac_dir)
+# 3. merge sac segments
+def get_sta_codes(sac_dir):
+    sta_codes = []
     os.chdir(sac_dir)
-    codes = sac_dir.split('/')
-    net, sta = codes[-5:-3]
-    date = UTCDateTime(''.join(codes[-3:]))
-    year = str(date.year)
-    jday = str(date.julday).zfill(3)
-    sac.merge(glob.glob('*.BHE.D.SAC'), '%s.%s.%s.%s.BHE.SAC' %(net, sta, year, jday))
-    sac.merge(glob.glob('*.BHN.D.SAC'), '%s.%s.%s.%s.BHN.SAC' %(net, sta, year, jday))
-    sac.merge(glob.glob('*.BHZ.D.SAC'), '%s.%s.%s.%s.BHZ.SAC' %(net, sta, year, jday))
-    # delete sac segments
-    todel = glob.glob('*.D.SAC')
-    for fname in todel: os.unlink(fname)
+    fnames = glob.glob('*.sac')
+    for fname in fnames:
+        codes = fname.split('.')
+        net, sta = codes[0:2]
+        chn = codes[-2]
+        sta_code = '%s.%s.%s'%(net, sta, chn)
+        if not sta_code in sta_codes: sta_codes.append(sta_code)
+    return sta_codes
+
+sac_dirs = sorted(glob.glob(os.path.join(sac_root,'*')))
+for sac_dir in sac_dirs:
+    if not os.path.isdir(sac_dir): continue
+    print('merge sac segments: %s'%sac_dir)
+    date = os.path.basename(sac_dir)
+    sta_codes = get_sta_codes(sac_dir)
+    for sta_code in sta_codes:
+        net, sta, chn = sta_code.split('.')
+        sac_paths = glob.glob(os.path.join(sac_dir,'%s.%s.*.%s.sac'%(net,sta,chn)))
+        out_path = os.path.join(sac_dir,'%s.%s.%s.%s.SAC'%(net,sta,date,chn))
+        sac.merge(sac_paths, out_path)
+        for sac_path in sac_paths: os.unlink(sac_path)
+
