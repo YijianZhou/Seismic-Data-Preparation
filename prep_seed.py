@@ -66,5 +66,6 @@ for sac_dir in sac_dirs:
         sac_paths = glob.glob(os.path.join(sac_dir,'%s.%s.*.%s.sac'%(net,sta,chn)))
         out_path = os.path.join(sac_dir,'%s.%s.%s.%s.SAC'%(net,sta,date,chn))
         sac.merge(sac_paths, out_path)
-        for sac_path in sac_paths: os.unlink(sac_path)
+        for sac_path in sac_paths: 
+            if os.path.exists(sac_path): os.unlink(sac_path)
 
