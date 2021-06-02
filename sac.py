@@ -40,33 +40,34 @@ def obspy_slice(stream, t0, t1):
     return st
 
 
+def merge_batch(fpaths, out_path):
+    p = subprocess.Popen(['sac'], stdin=subprocess.PIPE)
+    s = "wild echo off \n"
+    for i,fpath in enumerate(fpaths):
+        if i==0: s += "r %s \n" %fpath
+        else:    s += "r more %s \n" %fpath
+    s += "merge g z o a \n"
+    s += "w %s \n" %out_path
+    s += "q \n"
+    p.communicate(s.encode())
+
+
 def merge(fpaths, out_path):
     num_files = len(fpaths)
     if num_files==0: return
-    if num_files==1: os.rename(fpaths[0], out_path); return
-    p = subprocess.Popen(['sac'], stdin=subprocess.PIPE)
-    s = "wild echo off \n"
     print('merge sac files to {}'.format(out_path))
-    if num_files<1000:
-        for i,fpath in enumerate(fpaths):
-            if i==0: s += "r %s \n" %(fpath)
-            else:    s += "r more %s \n" %(fpath)
-        s += "merge g z o a \n"
-        s += "w %s \n" %(out_path)
+    if num_files==1: shutil.copy(fpaths[0], out_path)
+    elif num_files<1000: merge_batch(fpaths, out_path)
     else:
-        shutil.copy(fpaths[0], 'tmp.sac')
-        num_batch = 1 + (num_files-2)//999
+        raw_dir = os.path.split(fpaths[0])[0]
+        shutil.copy(fpaths[0], '%s/tmp.sac'%raw_dir)
+        batch_size = 900
+        num_batch = 1 + (num_files-2)//batch_size
         for idx in range(num_batch):
-            # read one batch (1000 files)
-            s += "r tmp.sac \n"
-            for fpath in fpaths[1+idx*999:1+(idx+1)*999]:
-                s += "r more %s \n" %(fpath)
-            # merge batch to tmp sac
-            s += "merge g z o a \n"
-            s += "w tmp.sac \n"
-        os.rename('tmp.sac', out_path)
-    s += "q \n"
-    p.communicate(s.encode())
+            batch_paths = ['%s/tmp.sac'%raw_dir]
+            batch_paths += fpaths[1+idx*batch_size:1+(idx+1)*batch_size]
+            merge_batch(batch_paths, '%s/tmp.sac'%raw_dir)
+        os.rename('%s/tmp.sac'%raw_dir, out_path)
 
 
 def ch_sta(fpath, knetwk=None, kstnm=None, kcmpnm=None, stlo=0, stla=0, stel=0):
