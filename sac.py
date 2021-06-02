@@ -1,4 +1,4 @@
-import os
+import os, shutil
 from obspy import read, UTCDateTime
 import subprocess
 os.putenv("SAC_DISPLAY_COPYRIGHT", '0')
@@ -48,23 +48,23 @@ def merge(fpaths, out_path):
     s = "wild echo off \n"
     print('merge sac files to {}'.format(out_path))
     if num_files<1000:
-      for i,fpath in enumerate(fpaths):
-        if i==0: s += "r %s \n" %(fpath)
-        else:    s += "r more %s \n" %(fpath)
-      s += "merge g z o a \n"
-      s += "w %s \n" %(out_path)
-    else:
-      os.rename(fpaths[0], 'tmp.sac')
-      num_batch = 1 + (num_files-2)//999
-      for idx in range(num_batch):
-        # read one batch (1000 files)
-        s += "r tmp.sac \n"
-        for fpath in fpaths[1+idx*999:1+(idx+1)*999]:
-            s += "r more %s \n" %(fpath)
-        # merge batch to tmp sac
+        for i,fpath in enumerate(fpaths):
+            if i==0: s += "r %s \n" %(fpath)
+            else:    s += "r more %s \n" %(fpath)
         s += "merge g z o a \n"
-        s += "w tmp.sac \n"
-      os.rename('tmp.sac', out_path)
+        s += "w %s \n" %(out_path)
+    else:
+        shutil.copy(fpaths[0], 'tmp.sac')
+        num_batch = 1 + (num_files-2)//999
+        for idx in range(num_batch):
+            # read one batch (1000 files)
+            s += "r tmp.sac \n"
+            for fpath in fpaths[1+idx*999:1+(idx+1)*999]:
+                s += "r more %s \n" %(fpath)
+            # merge batch to tmp sac
+            s += "merge g z o a \n"
+            s += "w tmp.sac \n"
+        os.rename('tmp.sac', out_path)
     s += "q \n"
     p.communicate(s.encode())
 
