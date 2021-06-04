@@ -46,7 +46,7 @@ def merge_batch(fpaths, out_path):
     for i,fpath in enumerate(fpaths):
         if i==0: s += "r %s \n" %fpath
         else:    s += "r more %s \n" %fpath
-    s += "merge g z o a \n"
+    s += "merge g i o a \n"
     s += "w %s \n" %out_path
     s += "q \n"
     p.communicate(s.encode())
