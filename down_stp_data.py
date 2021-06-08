@@ -1,3 +1,6 @@
+""" Download SCSN data by STP
+STP can be downloaded from https://scedc.caltech.edu/data/stp/index.html
+"""
 import os, shutil, glob
 from obspy import UTCDateTime
 import subprocess
