@@ -16,8 +16,7 @@ out_root = '/data3/bigdata/zhouyj/Example_events'
 num_workers = 10
 event_win = [10, 20] # sec before & after P
 get_data_dict = get_data_dict
-read_pha = read_fpha
-pha_list = read_pha(fpha)
+pha_list = read_fpha(fpha)
 
 def cut_event(event_id):
     # get event info
@@ -36,7 +35,7 @@ def cut_event(event_id):
         chn_code = data_path.split('.')[-2]
         out_path = os.path.join(event_dir,'%s.%s'%(net_sta,chn_code))
         # cut event
-        sac.cut(data_path, b, b+event_win[1], out_path)
+        sac.cut(data_path, b, b+sum(event_win), out_path)
         # write header
         tn = {}
         tn['t0'] = event_win[0]
