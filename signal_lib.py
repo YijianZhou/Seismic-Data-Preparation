@@ -12,6 +12,7 @@ def preprocess(stream, samp_rate, freq_band):
     if start_time>end_time: print('bad data!'); return []
     st = stream.slice(start_time, end_time)
     # resample data
+    samp_rate = int(samp_rate)
     org_rate = int(st[0].stats.sampling_rate)
     rate = np.gcd(org_rate, samp_rate)
     if rate==1: print('warning: bad sampling rate!'); return []
