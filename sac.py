@@ -23,7 +23,7 @@ def obspy_trim(stream, t0, t1, zfill=False):
         tr.stats.sac.nzjday = t0.julday
         tr.stats.sac.nzhour = t0.hour
         tr.stats.sac.nzmin = t0.minute
-        tr.stats.sac.nzsec = t0.day
+        tr.stats.sac.nzsec = t0.second
         tr.stats.sac.nzmsec = t0.microsecond / 1e3
     return st
 
@@ -35,7 +35,7 @@ def obspy_slice(stream, t0, t1):
         tr.stats.sac.nzjday = t0.julday
         tr.stats.sac.nzhour = t0.hour
         tr.stats.sac.nzmin = t0.minute
-        tr.stats.sac.nzsec = t0.day
+        tr.stats.sac.nzsec = t0.second
         tr.stats.sac.nzmsec = t0.microsecond / 1e3
     return st
 
