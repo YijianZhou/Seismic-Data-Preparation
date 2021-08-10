@@ -106,6 +106,24 @@ def ch_event(fpath, evla=None, evlo=None, evdp=None, mag=None, tn={}):
     p.communicate(s.encode())
 
 
+def ch_time(fpath, start_time):
+    p = subprocess.Popen(['sac'], stdin=subprocess.PIPE)
+    s = "wild echo off \n"
+#    s += "rh %s \n" %(fpath)
+#    s += "ch lovrok TRUE \n"
+#    s += "wh \n"
+    s += "rh %s \n" %(fpath)
+    s += "ch nzyear %s \n"%start_time.year
+    s += "ch nzjday %s \n"%start_time.julday
+    s += "ch nzhour %s \n"%start_time.hour
+    s += "ch nzmin %s \n"%start_time.minute
+    s += "ch nzsec %s \n"%start_time.second
+    s += "ch nzmsec %s \n"%int(start_time.microsecond/1e3)
+    s += "wh \n"
+    s += "q \n"
+    p.communicate(s.encode())
+
+
 def seed2sac(fpath, out_dir=None):
     if not out_dir: subprocess.call(['rdseed', '-df', fpath])
     else: subprocess.call(['rdseed', '-df', fpath, '-q', out_dir])
