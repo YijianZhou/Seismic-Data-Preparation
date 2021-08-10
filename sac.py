@@ -52,12 +52,15 @@ def merge_batch(fpaths, out_path):
     p.communicate(s.encode())
 
 
-def merge(fpaths, out_path):
+def merge(fpaths, out_path, rm_old=False):
     num_files = len(fpaths)
     if num_files==0: return
     print('merge sac files to {}'.format(out_path))
-    if num_files==1: shutil.copy(fpaths[0], out_path)
-    elif num_files<1000: merge_batch(fpaths, out_path)
+    if num_files==1: 
+        if rm_old: os.rename(fpaths[0], out_path)
+        else: shutil.copy(fpaths[0], out_path)
+    elif num_files<1000: 
+        merge_batch(fpaths, out_path)
     else:
         raw_dir = os.path.split(fpaths[0])[0]
         shutil.copy(fpaths[0], '%s/tmp.sac'%raw_dir)
@@ -68,6 +71,8 @@ def merge(fpaths, out_path):
             batch_paths += fpaths[1+idx*batch_size:1+(idx+1)*batch_size]
             merge_batch(batch_paths, '%s/tmp.sac'%raw_dir)
         os.rename('%s/tmp.sac'%raw_dir, out_path)
+    if rm_old:
+        for fpath in fpaths: os.unlink(fpath)
 
 
 def ch_sta(fpath, knetwk=None, kstnm=None, kcmpnm=None, stlo=0, stla=0, stel=0):
