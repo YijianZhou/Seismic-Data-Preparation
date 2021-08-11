@@ -57,8 +57,7 @@ def merge(fpaths, out_path, rm_old=False):
     if num_files==0: return
     print('merge sac files to {}'.format(out_path))
     if num_files==1: 
-        if rm_old: os.rename(fpaths[0], out_path)
-        else: shutil.copy(fpaths[0], out_path)
+        shutil.copy(fpaths[0], out_path)
     elif num_files<1000: 
         merge_batch(fpaths, out_path)
     else:
