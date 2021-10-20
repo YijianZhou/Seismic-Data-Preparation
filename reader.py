@@ -33,11 +33,24 @@ def read_pal_fsta(fsta):
     return sta_dict
 
 
+# read station file 
+def read_fsta(fsta):
+    print('reading %s'%fsta)
+    f=open(fsta); lines=f.readlines(); f.close()
+    sta_dict = {}
+    for line in lines:
+        codes = line.split(',')
+        net_sta = codes[0]
+        lat, lon, ele = [float(code) for code in codes[1:4]]
+        sta_dict[net_sta] = [lat, lon, ele]
+    return sta_dict
+
+
 # get data dict, given path structure
 def get_data_dict(date, data_dir):
     # get data paths
     data_dict = {}
-    date_dir = '{:0>4}/{:0>2}/{:0>2}'.format(date.year, date.month, date.day)
+    date_dir = '{:0>4}{:0>2}{:0>2}'.format(date.year, date.month, date.day)
     st_paths = sorted(glob.glob(os.path.join(data_dir, date_dir, '*')))
     for st_path in st_paths:
         fname = os.path.split(st_path)[-1]
