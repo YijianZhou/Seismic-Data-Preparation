@@ -1,49 +1,88 @@
-""" Cut event waveforms with SAC
-"""
-import os, sys, glob, shutil
+import sys, os, glob, shutil
 sys.path.append('/home/zhouyj/software/data_prep')
 import numpy as np
-import multiprocessing as mp
+import torch.multiprocessing as mp
+from torch.utils.data import Dataset, DataLoader
 from obspy import read, UTCDateTime
-from reader import read_fpha, get_data_dict, dtime2str
 import sac
+from signal_lib import preprocess
+from reader import read_fpha, get_data_dict
+from converter import dtime2str
+import warnings
+warnings.filterwarnings("ignore")
 
 # i/o paths
 data_dir = '/data/Example_data'
-fpha = 'output/example_pha.csv'
-out_root = '/data3/bigdata/zhouyj/Example_events'
+fpha = 'output/eg.pha'
+out_root = '/data/Example_events'
+if not os.path.exists(out_root): os.makedirs(out_root)
 # cut params
 num_workers = 10
-event_win = [10, 20] # sec before & after P
+win_len = [10, 20]
+freq_band = [1, 20]
+samp_rate = 100
 get_data_dict = get_data_dict
-pha_list = read_fpha(fpha)
 
-def cut_event(event_id):
+
+class Cut_Events(Dataset):
+  """ Dataset for cutting templates
+  """
+  def __init__(self, event_list):
+    self.event_list = event_list
+
+  def __getitem__(self, index):
+    data_paths_i = []
     # get event info
-    [event_loc, pick_dict] = pha_list[event_id]
+    event_loc, pick_dict = self.event_list[index]
     ot, lat, lon, dep, mag = event_loc
-    data_dict = get_data_dict(ot, data_dir)
     event_name = dtime2str(ot)
+    data_dict = get_data_dict(ot, data_dir)
     event_dir = os.path.join(out_root, event_name)
     if not os.path.exists(event_dir): os.makedirs(event_dir)
     # cut event
-    print('cutting {}'.format(event_name))
     for net_sta, [tp, ts] in pick_dict.items():
-      if net_sta not in data_dict: continue
-      for data_path in data_dict[net_sta]:
-        b = tp - read(data_path)[0].stats.starttime - event_win[0]
-        chn_code = data_path.split('.')[-2]
-        out_path = os.path.join(event_dir,'%s.%s'%(net_sta,chn_code))
+        data_paths = data_dict[net_sta]
+        chn_codes = [data_path.split('.')[-2] for data_path in data_paths]
+        out_paths = [os.path.join(event_dir,'%s.%s'%(net_sta,chn)) for chn in chn_codes]
         # cut event
-        sac.cut(data_path, b, b+sum(event_win), out_path)
-        # write header
-        tn = {}
-        tn['t0'] = event_win[0]
-        if ts: tn['t1'] = ts - tp + event_win[0]
-        sac.ch_event(out_path, lat, lon, dep, mag, tn)
+        b_list = [tp - read(data_path, headonly=True)[0].stats.starttime - win_len[0] \
+            for data_path in data_paths]
+        sac.cut(data_paths[0], b_list[0], b_list[0]+sum(win_len), out_paths[0])
+        sac.cut(data_paths[1], b_list[1], b_list[1]+sum(win_len), out_paths[1])
+        sac.cut(data_paths[2], b_list[2], b_list[2]+sum(win_len), out_paths[2])
+        # preprocess
+        st  = read(out_paths[0])
+        st += read(out_paths[1])
+        st += read(out_paths[2])
+        st = preprocess(st, samp_rate, freq_band)
+        if len(st)!=3: 
+            for out_path in out_paths: os.unlink(out_path)
+            continue
+        # write header & record out_paths
+        t0 = win_len[0]
+        t1 = ts - tp + win_len[0]
+        for ii in range(3): 
+            st[ii].stats.sac.t0, st[ii].stats.sac.t1 = t0, t1
+            st[ii].write(out_paths[ii], format='sac')
+        data_paths_i.append(out_paths)
+    return data_paths_i
 
-# cut all events data
-pool = mp.Pool(num_workers)
-pool.map_async(cut_event, range(len(pha_list)))
-pool.close()
-pool.join()
+  def __len__(self):
+    return len(self.event_list)
+
+
+if __name__ == '__main__':
+    mp.set_start_method('spawn', force=True) # 'spawn' or 'forkserver'
+
+    # i/o files
+    event_list = read_fpha(fpha)
+    # for sta-date pairs
+    data_paths  = []
+    dataset = Cut_Events(event_list)
+    dataloader = DataLoader(dataset, num_workers=num_workers, batch_size=None)
+    for i, data_paths_i in enumerate(dataloader):
+        data_paths += data_paths_i
+        if i%10==0: print('%s/%s events done/total'%(i,len(dataset)))
+    fout_data_paths = os.path.join(out_root,'data_paths.npy')
+    np.save(fout_data_paths, data_paths)
+
