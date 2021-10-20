@@ -6,8 +6,7 @@ from torch.utils.data import Dataset, DataLoader
 from obspy import read, UTCDateTime
 import sac
 from signal_lib import preprocess
-from reader import read_fpha, get_data_dict
-from converter import dtime2str
+from reader import read_fpha, get_data_dict, dtime2str
 import warnings
 warnings.filterwarnings("ignore")
 
