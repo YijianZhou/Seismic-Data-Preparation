@@ -4,7 +4,6 @@ import numpy as np
 from obspy import UTCDateTime
 from scipy.signal import correlate
 
-
 def preprocess(stream, samp_rate, freq_band):
     # time alignment
     start_time = max([trace.stats.starttime for trace in stream])
@@ -32,13 +31,11 @@ def preprocess(stream, samp_rate, freq_band):
     else:
         print('filter type not supported!'); return []
 
-
 def calc_dist_km(lat, lon):
     cos_lat = np.cos(np.mean(lat) * np.pi / 180)
     dx = cos_lat * (lon[1] - lon[0])
     dy = lat[1] - lat[0]
     return 111*(dx**2 + dy**2)**0.5
-
 
 def calc_cc(data, temp, norm_data=None, norm_temp=None):
     ntemp, ndata = len(temp), len(data)
@@ -53,3 +50,14 @@ def calc_cc(data, temp, norm_data=None, norm_temp=None):
     cc[np.isinf(cc)] = 0.
     cc[np.isnan(cc)] = 0.
     return cc
+
+# [evt, sta]
+def calc_azm_deg(lat, lon):
+    cos_lat = np.cos(np.mean(lat) * np.pi / 180)
+    dx = cos_lat * (lon[1] - lon[0])
+    dy = lat[1] - lat[0]
+    azm = np.arctan(dx/dy) * 180 / np.pi
+    if dx>0 and azm<0: azm += 180
+    elif dx<0 and azm<0: azm += 360
+    elif dx<0 and azm>0: azm += 180
+    return azm
