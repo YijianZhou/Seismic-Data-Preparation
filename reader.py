@@ -1,6 +1,39 @@
+""" File reader
+"""
 import os
 import glob
 from obspy import UTCDateTime
+
+# read catalog file
+def read_fctlg(fctlg):
+    f=open(fctlg); lines=f.readlines(); f.close()
+    event_list = []
+    for line in lines:
+        codes = line.split(',')
+        ot = UTCDateTime(codes[0])
+        lat, lon, dep, mag = [float(code) for code in codes[1:5]]
+        event_list.append([ot, lat, lon, dep, mag])
+    return event_list
+
+# read catalog into an np.array
+def read_fctlg_np(fctlg):
+    dtype = [('ot','O'),('lat','O'),('lon','O'),('dep','O'),('mag','O')]
+    f=open(fctlg); lines=f.readlines(); f.close()
+    event_list = []
+    for line in lines:
+        codes = line.split(',')
+        ot = UTCDateTime(codes[0])
+        lat, lon, dep, mag = [float(code) for code in codes[1:5]]
+        event_list.append((ot, lat, lon, dep, mag))
+    return np.array(event_list, dtype=dtype)
+
+def slice_ctlg(events, ot_rng=None, lat_rng=None, lon_rng=None, dep_rng=None, mag_rng=None):
+    if ot_rng: events = events[(events['ot']>=ot_rng[0])*(events['ot']<ot_rng[1])]
+    if lat_rng: events = events[(events['lat']>=lat_rng[0])*(events['lat']<lat_rng[1])]
+    if lon_rng: events = events[(events['lon']>=lon_rng[0])*(events['lon']<lon_rng[1])]
+    if dep_rng: events = events[(events['dep']>=dep_rng[0])*(events['dep']<dep_rng[1])]
+    if mag_rng: events = events[(events['mag']>=mag_rng[0])*(events['mag']<mag_rng[1])]
+    return events
 
 # read phase file
 def read_fpha(fpha):
