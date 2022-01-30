@@ -52,7 +52,6 @@ def read_fpha(fpha):
             pha_list[-1][-1][net_sta] = [tp, ts]
     return pha_list
 
-
 # read station file in PAL format
 def read_pal_fsta(fsta):
     print('reading %s'%fsta)
@@ -65,7 +64,6 @@ def read_pal_fsta(fsta):
         sta_dict[net_sta] = [lat, lon, ele, gain]
     return sta_dict
 
-
 # read station file 
 def read_fsta(fsta):
     print('reading %s'%fsta)
@@ -77,7 +75,6 @@ def read_fsta(fsta):
         lat, lon, ele = [float(code) for code in codes[1:4]]
         sta_dict[net_sta] = [lat, lon, ele]
     return sta_dict
-
 
 # get data dict, given path structure
 def get_data_dict(date, data_dir):
@@ -94,7 +91,6 @@ def get_data_dict(date, data_dir):
     todel = [net_sta for net_sta in data_dict if len(data_dict[net_sta])!=3]
     for net_sta in todel: data_dict.pop(net_sta)
     return data_dict
-
 
 def dtime2str(dtime):
     date = ''.join(str(dtime).split('T')[0].split('-'))
