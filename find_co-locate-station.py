@@ -1,3 +1,5 @@
+""" Useful when station name is changed
+"""
 import numpy as np
 
 # i/o paths
