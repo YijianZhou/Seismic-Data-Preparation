@@ -1,3 +1,5 @@
+""" Python interface for SAC
+"""
 import os, shutil
 from obspy import read, UTCDateTime
 import subprocess
@@ -14,7 +16,6 @@ def cut(fpath, b, e, outpath, fillz=False):
     s += "q \n"
     p.communicate(s.encode())
 
-
 def obspy_trim(stream, t0, t1, zfill=False):
     if not zfill: st = stream.copy().trim(t0, t1)
     if zfill: st = stream.copy().trim(t0, t1, pad=True, fill_value=0)
@@ -27,7 +28,6 @@ def obspy_trim(stream, t0, t1, zfill=False):
         tr.stats.sac.nzmsec = t0.microsecond / 1e3
     return st
 
-
 def obspy_slice(stream, t0, t1):
     st = stream.slice(t0, t1)
     for tr in st:
@@ -39,7 +39,6 @@ def obspy_slice(stream, t0, t1):
         tr.stats.sac.nzmsec = t0.microsecond / 1e3
     return st
 
-
 def merge_batch(fpaths, out_path):
     p = subprocess.Popen(['sac'], stdin=subprocess.PIPE)
     s = "wild echo off \n"
@@ -50,7 +49,6 @@ def merge_batch(fpaths, out_path):
     s += "w %s \n" %out_path
     s += "q \n"
     p.communicate(s.encode())
-
 
 def merge(fpaths, out_path, rm_old=False):
     num_files = len(fpaths)
@@ -73,7 +71,6 @@ def merge(fpaths, out_path, rm_old=False):
     if rm_old:
         for fpath in fpaths: os.unlink(fpath)
 
-
 def ch_sta(fpath, knetwk=None, kstnm=None, kcmpnm=None, stlo=0, stla=0, stel=0):
     p = subprocess.Popen(['sac'], stdin=subprocess.PIPE)
     s = "wild echo off \n"
@@ -89,7 +86,6 @@ def ch_sta(fpath, knetwk=None, kstnm=None, kcmpnm=None, stlo=0, stla=0, stel=0):
     s += "q \n"
     p.communicate(s.encode())
 
-
 def ch_event(fpath, evla=None, evlo=None, evdp=None, mag=None, tn={}):
     p = subprocess.Popen(['sac'], stdin=subprocess.PIPE)
     s = "wild echo off \n"
@@ -104,13 +100,13 @@ def ch_event(fpath, evla=None, evlo=None, evdp=None, mag=None, tn={}):
     s += "q \n"
     p.communicate(s.encode())
 
-
-def ch_time(fpath, start_time):
+def ch_time(fpath, start_time, is_lock=False):
     p = subprocess.Popen(['sac'], stdin=subprocess.PIPE)
     s = "wild echo off \n"
-#    s += "rh %s \n" %(fpath)
-#    s += "ch lovrok TRUE \n"
-#    s += "wh \n"
+    if is_lock:
+        s += "rh %s \n" %(fpath)
+        s += "ch lovrok TRUE \n"
+        s += "wh \n"
     s += "rh %s \n" %(fpath)
     s += "ch nzyear %s \n"%start_time.year
     s += "ch nzjday %s \n"%start_time.julday
@@ -122,21 +118,17 @@ def ch_time(fpath, start_time):
     s += "q \n"
     p.communicate(s.encode())
 
-
 def seed2sac(fpath, out_dir=None):
     if not out_dir: subprocess.call(['rdseed', '-df', fpath])
     else: subprocess.call(['rdseed', '-df', fpath, '-q', out_dir])
-
 
 def get_resp(fpath, out_dir=None):
     if not out_dir: subprocess.call(['rdseed', '-fR', fpath])
     else: subprocess.call(['rdseed', '-fR', fpath, '-q', out_dir])
 
-
 def get_pz(fpath, out_dir=None):
     if not out_dir: subprocess.call(['rdseed', '-fp', fpath])
     else: subprocess.call(['rdseed', '-fp', fpath, '-q', out_dir])
-
 
 def mseed2sac(fpath):
     subprocess.call(['mseed2sac', '-O', fpath])
