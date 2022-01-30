@@ -72,10 +72,7 @@ class Cut_Events(Dataset):
 
 if __name__ == '__main__':
     mp.set_start_method('spawn', force=True) # 'spawn' or 'forkserver'
-
-    # i/o files
     event_list = read_fpha(fpha)
-    # for sta-date pairs
     data_paths  = []
     dataset = Cut_Events(event_list)
     dataloader = DataLoader(dataset, num_workers=num_workers, batch_size=None)
