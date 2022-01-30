@@ -2,6 +2,7 @@
 """
 import os
 import glob
+import numpy as np
 from obspy import UTCDateTime
 
 # read catalog file
