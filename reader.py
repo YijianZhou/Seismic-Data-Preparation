@@ -53,7 +53,7 @@ def read_fpha(fpha):
     return pha_list
 
 # read station file in PAL format
-def read_pal_fsta(fsta):
+def read_fsta_pal(fsta):
     print('reading %s'%fsta)
     f=open(fsta); lines=f.readlines(); f.close()
     sta_dict = {}

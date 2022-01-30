@@ -60,4 +60,6 @@ def calc_azm_deg(lat, lon):
     if dx>0 and azm<0: azm += 180
     elif dx<0 and azm<0: azm += 360
     elif dx<0 and azm>0: azm += 180
-    return azm
+    if azm<180: baz = azm + 180
+    else:       baz = azm - 180
+    return azm, baz
