@@ -5,6 +5,7 @@ import glob
 import numpy as np
 from obspy import UTCDateTime
 
+# UTCDateTime to string
 def dtime2str(dtime):
     date = ''.join(str(dtime).split('T')[0].split('-'))
     time = ''.join(str(dtime).split('T')[1].split(':'))[0:9]
@@ -33,6 +34,7 @@ def read_fctlg_np(fctlg):
         event_list.append((ot, lat, lon, dep, mag))
     return np.array(event_list, dtype=dtype)
 
+# slice catalog (in struct np)
 def slice_ctlg(events, ot_rng=None, lat_rng=None, lon_rng=None, dep_rng=None, mag_rng=None):
     if ot_rng: events = events[(events['ot']>=ot_rng[0])*(events['ot']<ot_rng[1])]
     if lat_rng: events = events[(events['lat']>=lat_rng[0])*(events['lat']<lat_rng[1])]
