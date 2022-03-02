@@ -5,6 +5,11 @@ import glob
 import numpy as np
 from obspy import UTCDateTime
 
+def dtime2str(dtime):
+    date = ''.join(str(dtime).split('T')[0].split('-'))
+    time = ''.join(str(dtime).split('T')[1].split(':'))[0:9]
+    return date + time
+
 # read catalog file
 def read_fctlg(fctlg):
     f=open(fctlg); lines=f.readlines(); f.close()
@@ -53,6 +58,25 @@ def read_fpha(fpha):
             pha_list[-1][-1][net_sta] = [tp, ts]
     return pha_list
 
+# read phase file into dict
+def read_fpha_dict(fpha):
+    f=open(fpha); lines=f.readlines(); f.close()
+    event_dict = {}
+    for line in lines:
+        codes = line.split(',')
+        if len(codes[0])>10:
+            ot = UTCDateTime(codes[0])
+            event_name = dtime2str(ot)
+            lat, lon, dep, mag = [float(code) for code in codes[1:5]]
+            event_loc = [ot, lat, lon, dep, mag]
+            event_dict[event_name] = [event_loc, {}]
+        else:
+            net_sta = codes[0]
+            tp = UTCDateTime(codes[1]) if codes[1]!='-1' else -1
+            ts = UTCDateTime(codes[2]) if codes[2][:-1]!='-1' else -1
+            event_dict[event_name][-1][net_sta] = [tp, ts]
+    return event_dict
+
 # read station file in PAL format
 def read_fsta_pal(fsta):
     print('reading %s'%fsta)
@@ -92,12 +116,6 @@ def get_data_dict(date, data_dir):
     todel = [net_sta for net_sta in data_dict if len(data_dict[net_sta])!=3]
     for net_sta in todel: data_dict.pop(net_sta)
     return data_dict
-
-def dtime2str(dtime):
-    date = ''.join(str(dtime).split('T')[0].split('-'))
-    time = ''.join(str(dtime).split('T')[1].split(':'))[0:9]
-    return date + time
-
 
 """ Custimized functions
 """

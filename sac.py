@@ -118,6 +118,15 @@ def ch_time(fpath, start_time, is_lock=False):
     s += "q \n"
     p.communicate(s.encode())
 
+def ch_b(fpath, b):
+    p = subprocess.Popen(['sac'], stdin=subprocess.PIPE)
+    s = "wild echo off \n"
+    s += "rh %s \n" %(fpath)
+    s += "ch b %s \n"%b
+    s += "wh \n"
+    s += "q \n"
+    p.communicate(s.encode())
+
 def seed2sac(fpath, out_dir=None):
     if not out_dir: subprocess.call(['rdseed', '-df', fpath])
     else: subprocess.call(['rdseed', '-df', fpath, '-q', out_dir])
