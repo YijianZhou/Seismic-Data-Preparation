@@ -43,6 +43,11 @@ def slice_ctlg(events, ot_rng=None, lat_rng=None, lon_rng=None, dep_rng=None, ma
     if mag_rng: events = events[(events['mag']>=mag_rng[0])*(events['mag']<mag_rng[1])]
     return events
 
+def slice_ctlg_circle(events, ref_lat, ref_lon, radius):
+    cos_lat = np.cos(ref_lat*np.pi/180)
+    cond = (events['lat']-ref_lat)**2 + ((events['lon']-ref_lon)*cos_lat)**2 < radius**2
+    return events[cond]
+
 # read phase file
 def read_fpha(fpha):
     f=open(fpha); lines=f.readlines(); f.close()
@@ -102,6 +107,23 @@ def read_fsta(fsta):
         lat, lon, ele = [float(code) for code in codes[1:4]]
         sta_dict[net_sta] = [lat, lon, ele]
     return sta_dict
+
+# read fault data (in GMT format)
+def read_ffault(ffault, lat_rng, lon_rng):
+    faults = []
+    f=open(ffault, errors='replace'); lines=f.readlines(); f.close()
+    for line in lines:
+        if line[0]=='>': 
+            if faults==[]: faults.append([])
+            elif faults[-1]!=[]: faults.append([])
+        elif line[0]!='#': 
+            lon, lat = [float(code) for code in line.split()]
+            if lon<lon_rng[0] or lon>lon_rng[1]: continue
+            if lat<lat_rng[0] or lat>lat_rng[1]: continue
+            faults[-1].append([lon, lat])
+    if faults[-1]==[]: faults = faults[:-1]
+    for i in range(len(faults)): faults[i] = np.array(faults[i])
+    return np.array(faults)
 
 # get data dict, given path structure
 def get_data_dict(date, data_dir):
