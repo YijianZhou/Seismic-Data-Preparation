@@ -109,7 +109,7 @@ def read_fsta(fsta):
     return sta_dict
 
 # read fault data (in GMT format)
-def read_ffault(ffault, lat_rng, lon_rng):
+def read_fault(ffault, lat_rng, lon_rng):
     faults = []
     f=open(ffault, errors='replace'); lines=f.readlines(); f.close()
     for line in lines:
