@@ -43,6 +43,7 @@ def slice_ctlg(events, ot_rng=None, lat_rng=None, lon_rng=None, dep_rng=None, ma
     if mag_rng: events = events[(events['mag']>=mag_rng[0])*(events['mag']<mag_rng[1])]
     return events
 
+# slicing catalog by circle (fixed epicentral distance)
 def slice_ctlg_circle(events, ref_lat, ref_lon, radius):
     cos_lat = np.cos(ref_lat*np.pi/180)
     cond = (events['lat']-ref_lat)**2 + ((events['lon']-ref_lon)*cos_lat)**2 < radius**2
