@@ -87,7 +87,6 @@ def read_fpha_dict(fpha):
 
 # read station file 
 def read_fsta(fsta):
-    print('reading %s'%fsta)
     f=open(fsta); lines=f.readlines(); f.close()
     sta_dict = {}
     for line in lines:
