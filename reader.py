@@ -52,19 +52,19 @@ def slice_ctlg_circle(events, ref_lat, ref_lon, radius):
 # read phase file
 def read_fpha(fpha):
     f=open(fpha); lines=f.readlines(); f.close()
-    pha_list = []
+    event_list = []
     for line in lines:
         codes = line.split(',')
         if len(codes[0])>10:
             ot = UTCDateTime(codes[0])
             lat, lon, dep, mag = [float(code) for code in codes[1:5]]
             event_loc = [ot, lat, lon, dep, mag]
-            pha_list.append([event_loc, {}])
+            event_list.append([event_loc, {}])
         else:
             net_sta = codes[0]
             tp, ts = [UTCDateTime(code) for code in codes[1:3]]
-            pha_list[-1][-1][net_sta] = [tp, ts]
-    return pha_list
+            event_list[-1][-1][net_sta] = [tp, ts]
+    return event_list
 
 # read phase file into dict
 def read_fpha_dict(fpha):
@@ -85,18 +85,6 @@ def read_fpha_dict(fpha):
             event_dict[event_name][-1][net_sta] = [tp, ts]
     return event_dict
 
-# read station file in PAL format
-def read_fsta_pal(fsta):
-    print('reading %s'%fsta)
-    f=open(fsta); lines=f.readlines(); f.close()
-    sta_dict = {}
-    for line in lines:
-        codes = line.split(',')
-        net_sta = codes[0]
-        lat, lon, ele, gain = [float(code) for code in codes[1:5]]
-        sta_dict[net_sta] = [lat, lon, ele, gain]
-    return sta_dict
-
 # read station file 
 def read_fsta(fsta):
     print('reading %s'%fsta)
@@ -107,6 +95,18 @@ def read_fsta(fsta):
         net_sta = codes[0]
         lat, lon, ele = [float(code) for code in codes[1:4]]
         sta_dict[net_sta] = [lat, lon, ele]
+    return sta_dict
+
+# read PAL station file
+def read_fsta_pal(fsta):
+    print('reading %s'%fsta)
+    f=open(fsta); lines=f.readlines(); f.close()
+    sta_dict = {}
+    for line in lines:
+        codes = line.split(',')
+        net_sta = codes[0]
+        lat, lon, ele, gain = [float(code) for code in codes[1:5]]
+        sta_dict[net_sta] = [lat, lon, ele, gain]
     return sta_dict
 
 # read fault data (in GMT format)
