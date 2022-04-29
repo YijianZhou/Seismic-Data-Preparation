@@ -5,12 +5,6 @@ import glob
 import numpy as np
 from obspy import UTCDateTime
 
-# UTCDateTime to string
-def dtime2str(dtime):
-    date = ''.join(str(dtime).split('T')[0].split('-'))
-    time = ''.join(str(dtime).split('T')[1].split(':'))[0:9]
-    return date + time
-
 # read catalog file
 def read_fctlg(fctlg):
     f=open(fctlg); lines=f.readlines(); f.close()
@@ -96,18 +90,6 @@ def read_fsta(fsta):
         sta_dict[net_sta] = [lat, lon, ele]
     return sta_dict
 
-# read PAL station file
-def read_fsta_pal(fsta):
-    print('reading %s'%fsta)
-    f=open(fsta); lines=f.readlines(); f.close()
-    sta_dict = {}
-    for line in lines:
-        codes = line.split(',')
-        net_sta = codes[0]
-        lat, lon, ele, gain = [float(code) for code in codes[1:5]]
-        sta_dict[net_sta] = [lat, lon, ele, gain]
-    return sta_dict
-
 # read fault data (in GMT format)
 def read_fault(ffault, lat_rng, lon_rng):
     faults = []
@@ -140,6 +122,12 @@ def get_data_dict(date, data_dir):
     todel = [net_sta for net_sta in data_dict if len(data_dict[net_sta])!=3]
     for net_sta in todel: data_dict.pop(net_sta)
     return data_dict
+
+# UTCDateTime to string
+def dtime2str(dtime):
+    date = ''.join(str(dtime).split('T')[0].split('-'))
+    time = ''.join(str(dtime).split('T')[1].split(':'))[0:9]
+    return date + time
 
 """ Custimized functions
 """
