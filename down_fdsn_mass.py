@@ -26,10 +26,9 @@ print('time range: %s'%[start_date, end_date])
 domain = RectangularDomain(minlatitude=lat_rng[0], maxlatitude=lat_rng[1],
                            minlongitude=lon_rng[0], maxlongitude=lon_rng[1])
 for day_idx in range(num_day):
-  for net_code in net_codes:
     t0 = start_date + 86400*day_idx
     t1 = start_date + 86400*(day_idx+1)
-    print('downloading %s network: %s'%(net_code, t0))
+    print('downloading %s'%t0)
     # 1. set domain & restrict
     restrict = Restrictions(
         starttime=t0, endtime=t1,
