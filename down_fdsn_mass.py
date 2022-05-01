@@ -32,7 +32,7 @@ for day_idx in range(num_day):
     # 1. set domain & restrict
     restrict = Restrictions(
         starttime=t0, endtime=t1,
-        network=net_code, station="*", 
+        network="*", station="*", 
         reject_channels_with_gaps=False,
         minimum_length=0.0,
         minimum_interstation_distance_in_m=10,
