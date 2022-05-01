@@ -18,7 +18,7 @@ if not os.path.exists(out_root): os.makedirs(out_root)
 # signal process
 num_workers = 10
 win_len = [10, 30]
-get_data_dict = get_data_dict
+get_data_dict = get_data_dict # modify this if use customized function
 samp_rate = 100
 freq_band = [1, 40]
 data_format = 'mseed'
