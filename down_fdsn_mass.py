@@ -1,3 +1,5 @@
+""" Download FDSN data with obspy MassDownloader
+"""
 import os
 import obspy
 from obspy import UTCDateTime
@@ -5,32 +7,16 @@ from obspy.clients.fdsn.mass_downloader import RectangularDomain, Restrictions, 
 import time
 
 # i/o paths
-fsta = 'input/station_nepal.fullfed'
-f=open(fsta); lines=f.readlines(); f.close()
-data_root = '/data1/Gorkha_raw'
-sta_dir = 'output/gorkha_stations'
+data_root = '/data/Example_data'
+sta_dir = 'output/eg_stations'
 # down params
 providers = ["IRIS"]
-chn_codes = ['HH*']
+chn_codes = ['HH*','EH*']
 loc_codes = ["", "00", "01"]
 num_workers = 10
-
-# get data range
-net_codes = []
-lat, lon = [], []
-start_date, end_date = [], []
-for line in lines:
-    codes = line.split('|')
-    if codes[0] not in net_codes: net_codes.append(codes[0])
-    lat.append(float(codes[4]))
-    lon.append(float(codes[5]))
-    start_date.append(UTCDateTime(UTCDateTime(codes[-2]).date))
-    end_date.append(UTCDateTime(UTCDateTime(codes[-1]).date))
-
-lat_rng = [min(lat)-0.5, max(lat)+0.5]
-lon_rng = [min(lon)-0.5, max(lon)+0.5]
-start_date = min(start_date)
-end_date = max(end_date)
+start_date, end_date = UTCDateTime('20160101'), UTCDateTime('20170101')
+lat_rng = [35,38]
+lon_rng = [111,112]
 num_day = int((end_date - start_date) / 86400) + 1
 print('data range:')
 print('latitude range: %s'%(lat_rng))
@@ -48,18 +34,14 @@ for day_idx in range(num_day):
     restrict = Restrictions(
         starttime=t0, endtime=t1,
         network=net_code, station="*", 
-#        location="", channel="HH*",
-#        chunklength_in_sec=86400,
         reject_channels_with_gaps=False,
         minimum_length=0.0,
         minimum_interstation_distance_in_m=10,
         channel_priorities=chn_codes,
         location_priorities=loc_codes)
-
     # 2. set storage
     out_dir = os.path.join(data_root, ''.join(str(t0.date).split('-')))
     if not os.path.exists(out_dir): os.makedirs(out_dir)
-
     # 3. start download
     mdl = MassDownloader(providers=providers)
     mdl.download(domain, restrict, 
