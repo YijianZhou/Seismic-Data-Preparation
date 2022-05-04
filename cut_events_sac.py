@@ -20,7 +20,7 @@ num_workers = 10
 win_len = [10, 20]
 freq_band = [1, 20]
 samp_rate = 100
-get_data_dict = get_data_dict
+get_data_dict = get_data_dict # modify this if use customized function
 
 
 class Cut_Events(Dataset):
