@@ -2,10 +2,12 @@
 """
 from obspy import UTCDateTime
 import subprocess
+import os
 
 # i/o files
 time_range = '20190704-20190725'
 fpha = 'output/rc_scsn_%s.dat'%time_range
+if not os.path.exists('output'); os.makedirs('output')
 
 # download params
 lat_range = [35.4, 36.1]
