@@ -1,7 +1,7 @@
 """ Data clean: data gaps that are zero-filled
     Zero-filled gaps will become glitches after rmean; rtr; taper; filter. 
-    This code change the zero-filled fata into average fill
-    If the data is merged with average fill strategy, don't need to run this code.
+    This code change the zero-filled fata into interpolation
+    If the data is merged with interpolation strategy, no need to run this code.
 """
 import os, shutil, glob
 import numpy as np
@@ -22,8 +22,9 @@ def ave_fill(st):
     gap_list = [gap for gap in gap_list if len(gap)>=min_gap_npts]
     for gap in gap_list:
         idx0, idx1 = max(0, gap[0]-1), min(npts-1, gap[-1]+1)
-        ave_fill = np.mean([data[idx0], data[idx1]])
-        data[gap[0]:gap[-1]+1] = ave_fill
+        delta = (data[idx1] - data[idx0]) / (idx1-idx0)
+        interp_fill = np.array([data[idx0] + ii*delta for ii in range(idx1-idx0)])
+        data[idx0:idx1] = interp_fill
     st[0].data = data
     return st, len(gap_list)
 
