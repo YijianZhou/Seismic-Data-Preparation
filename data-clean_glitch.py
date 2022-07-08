@@ -1,3 +1,7 @@
+""" Data clean: remove glitches in the seismogram
+    Glitches are impulses caused by instrumental error. 
+    This code utilize forward & backward STA/LTA to detect and remove glitches
+"""
 import os, sys, glob
 sys.path.append('/home/zhouyj/software/data_prep')
 import shutil
