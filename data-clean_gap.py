@@ -37,7 +37,8 @@ for data_dir in data_dirs:
         fname = os.path.basename(st_path)
         bak_path = os.path.join(bak_dir, fname)
         st, num_gap = ave_fill(st)
-        if num_gap>0: print('average filled %s gaps: %s'%(num_gap, st_path))
         if num_gap>=num_gap_bak: shutil.copy(st_path, bak_path)
-        st.write(st_path)
+        if num_gap>0: 
+            print('average filled %s gaps: %s'%(num_gap, st_path))
+            st.write(st_path)
 
