@@ -1,10 +1,8 @@
 """ Download FDSN data with obspy MassDownloader
 """
 import os
-import obspy
 from obspy import UTCDateTime
 from obspy.clients.fdsn.mass_downloader import RectangularDomain, Restrictions, MassDownloader
-import time
 
 # i/o paths
 data_root = '/data/Example_data'
