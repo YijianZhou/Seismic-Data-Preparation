@@ -23,7 +23,6 @@ glitch_wid = 1. # sec
 glitch_wid_npts = int(samp_rate*glitch_wid)
 to_write = 0 # 0 - not to write; 1 - write >num_glitch_bak; 2 - write all
 
-# det glitch
 def calc_sta_lta(data, win_lta_npts, win_sta_npts):
     npts = len(data)
     if npts < win_lta_npts + win_sta_npts:
@@ -41,7 +40,6 @@ def calc_sta_lta(data, win_lta_npts, win_sta_npts):
     sta_lta[np.isinf(sta_lta)] = 0.
     sta_lta[np.isnan(sta_lta)] = 0.
     return sta_lta
-
 
 def remove_glitch(st):
     data_raw = st[0].data.copy()
