@@ -64,7 +64,8 @@ def remove_glitch(st):
         idx0 = gap[0]
         if sum(large_back[ref_idx:ref_idx+2*glitch_wid_npts]==0)==0: continue
         idx1 = ref_idx + np.where(large_back[ref_idx:ref_idx+2*glitch_wid_npts]==0)[0][0]
-        glitch_times.append([idx0/samp_rate, idx1/samp_rate])
+        t0, t1 = start_time + idx0/samp_rate, start_time + idx1/samp_rate
+        glitch_times.append([t0, t1])
         # interploate fill
         delta = (data_raw[idx1] - data_raw[idx0]) / (idx1-idx0)
         interp_fill = np.array([data_raw[idx0] + ii*delta for ii in range(idx1-idx0)])
