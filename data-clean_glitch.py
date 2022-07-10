@@ -73,23 +73,27 @@ def remove_glitch(st):
     st[0].data = data_raw
     return st, glitch_times
 
-
 for data_dir in data_dirs:
     print('cleaning', data_dir)
-    st_paths = sorted(glob.glob(os.path.join(data_dir,'*')))
-    for st_path in st_paths:
-        try: st = read(st_path)
-        except: print('error in reading file', st_path); continue
-        fname = os.path.basename(st_path)
-        net_sta = '.'.join(fname.split('.')[1:3])
-        bak_path = os.path.join(bak_dir, fname)
-        st, glitch_times = remove_glitch(st)
-        num_glitch = len(glitch_times)
-        if num_glitch>=num_glitch_bak: 
-            shutil.copy(st_path, bak_path)
-            if to_write==1: st.write(st_path)
-        if num_glitch>0: 
-            print('%s glitches removed: %s'%(num_glitch, st_path))
-            for [t0,t1] in glitch_times: fout.write('%s,%s,%s\n'%(net_sta,t0,t1))
-            if to_write==2 and num_glitch<num_glitch_bak: st.write(st_path)
+    stz_paths = sorted(glob.glob(os.path.join(data_dir,'*Z.%s'%data_format)))
+    for stz_path in stz_paths:
+        stz_dir, fname = os.path.split(stz_path)
+        net, sta = fname.split('.')[1:3]
+        st_paths = sorted(glob.glob('%s/*.%s.%s.*'%(stz_dir,net,sta)))
+        is_bad, st_raw = False, []
+        for st_path in st_paths:
+            try: st = read(st_path)
+            except: print('error in reading file', st_path); continue
+            bak_path = os.path.join(bak_dir, os.path.basename(st_path))
+            st_raw.append([st, bak_path])
+            st, glitch_times = remove_glitch(st.copy())
+            num_glitch = len(glitch_times)
+            for [t0,t1] in glitch_times: fout.write('%s.%s,%s,%s\n'%(net,sta,t0,t1))
+            if num_glitch>=num_glitch_bak:
+                is_bad = True
+                if to_write==1: st.write(st_path)
+            elif num_glitch>0:
+                if to_write==2: st.write(st_path)
+        if is_bad:
+            for st, bak_path in st_raw: st.write(bak_path)
 fout.close()
