@@ -4,6 +4,7 @@ import numpy as np
 from obspy import UTCDateTime
 from scipy.signal import correlate
 
+# preprocess obspy stream
 def preprocess(stream, samp_rate, freq_band):
     # time alignment
     start_time = max([trace.stats.starttime for trace in stream])
@@ -28,12 +29,26 @@ def preprocess(stream, samp_rate, freq_band):
     else:
         print('filter type not supported!'); return []
 
+# change sac header: ref time
+def sac_ch_time(st):
+    for tr in st:
+        t0 = tr.stats.starttime
+        tr.stats.sac.nzyear = t0.year
+        tr.stats.sac.nzjday = t0.julday
+        tr.stats.sac.nzhour = t0.hour
+        tr.stats.sac.nzmin = t0.minute
+        tr.stats.sac.nzsec = t0.second
+        tr.stats.sac.nzmsec = t0.microsecond / 1e3
+    return st
+
+# calc epicentral distance in km
 def calc_dist_km(lat, lon):
     cos_lat = np.cos(np.mean(lat) * np.pi / 180)
     dx = cos_lat * (lon[1] - lon[0])
     dy = lat[1] - lat[0]
     return 111*(dx**2 + dy**2)**0.5
 
+# calc cross-correlation function (normalized)
 def calc_cc(data, temp, norm_data=None, norm_temp=None):
     ntemp, ndata = len(temp), len(data)
     if ntemp>ndata: return [0]
@@ -48,7 +63,7 @@ def calc_cc(data, temp, norm_data=None, norm_temp=None):
     cc[np.isnan(cc)] = 0.
     return cc
 
-# [evt, sta]
+# calc azm & back-azm, given [evt, sta] lat & lon
 def calc_azm_deg(lat, lon):
     cos_lat = np.cos(np.mean(lat) * np.pi / 180)
     dx = cos_lat * (lon[1] - lon[0])
