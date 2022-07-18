@@ -40,6 +40,7 @@ class Cut_Events(Dataset):
     if not os.path.exists(event_dir): os.makedirs(event_dir)
     # cut event
     for net_sta, [tp, ts] in pick_dict.items():
+        if net_sta not in data_dict: continue
         data_paths = data_dict[net_sta]
         chn_codes = [data_path.split('.')[-2] for data_path in data_paths]
         out_paths = [os.path.join(event_dir,'%s.%s'%(net_sta,chn)) for chn in chn_codes]
