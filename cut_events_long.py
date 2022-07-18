@@ -4,8 +4,7 @@ import numpy as np
 import torch.multiprocessing as mp
 from torch.utils.data import Dataset, DataLoader
 from obspy import read, UTCDateTime
-import sac
-from signal_lib import preprocess
+from signal_lib import preprocess, sac_ch_time
 from reader import read_fpha, get_data_dict, dtime2str
 import warnings
 warnings.filterwarnings("ignore")
@@ -42,28 +41,18 @@ class Cut_Events(Dataset):
     for net_sta, [tp, ts] in pick_dict.items():
         if net_sta not in data_dict: continue
         data_paths = data_dict[net_sta]
-        chn_codes = [data_path.split('.')[-2] for data_path in data_paths]
-        out_paths = [os.path.join(event_dir,'%s.%s'%(net_sta,chn)) for chn in chn_codes]
-        # cut event
-        b_list = [tp - read(data_path, headonly=True)[0].stats.starttime - win_len[0] \
-            for data_path in data_paths]
-        sac.cut(data_paths[0], b_list[0], b_list[0]+sum(win_len), out_paths[0])
-        sac.cut(data_paths[1], b_list[1], b_list[1]+sum(win_len), out_paths[1])
-        sac.cut(data_paths[2], b_list[2], b_list[2]+sum(win_len), out_paths[2])
-        # preprocess
-        st  = read(out_paths[0])
-        st += read(out_paths[1])
-        st += read(out_paths[2])
+        out_paths = [os.path.join(event_dir,'%s.%s'%(net_sta,ii)) for ii in range(3)]
+        st  = read(data_paths[0], starttime=tp-win_len[0], endtime=tp+win_len[1])
+        st += read(data_paths[0], starttime=tp-win_len[0], endtime=tp+win_len[1])
+        st += read(data_paths[0], starttime=tp-win_len[0], endtime=tp+win_len[1])
+        if len(st)!=3: continue
         st = preprocess(st, samp_rate, freq_band)
-        if len(st)!=3: 
-            for out_path in out_paths: os.unlink(out_path)
-            continue
-        # write header & record out_paths
-        t0 = win_len[0]
-        t1 = ts - tp + win_len[0]
-        for ii in range(3): 
-            st[ii].stats.sac.t0, st[ii].stats.sac.t1 = t0, t1
-            st[ii].write(out_paths[ii], format='sac')
+        if len(st)!=3: continue
+        for ii, tr in enumerate(st):
+            tr.write(out_paths[ii], format='sac')
+            tr = sac_ch_time(read(out_paths[ii]))[0]
+            tr.stats.sac.t0, tr.stats.sac.t1 = win_len[0], ts-tp+win_len[0]
+            tr.write(out_paths[ii], format='sac')
         data_paths_i.append(out_paths)
     return data_paths_i
 
