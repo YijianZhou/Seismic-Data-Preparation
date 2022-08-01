@@ -13,7 +13,7 @@ def preprocess(stream, samp_rate, freq_band):
     st = stream.slice(start_time, end_time)
     # resample data
     org_rate = st[0].stats.sampling_rate
-    if org_rate!=samp_rate: st = st.interpolate(samp_rate)
+    if org_rate!=samp_rate: st.resample(samp_rate)
     for ii in range(len(st)):
         st[ii].data[np.isnan(st[ii].data)] = 0
         st[ii].data[np.isinf(st[ii].data)] = 0
