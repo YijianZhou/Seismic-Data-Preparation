@@ -11,6 +11,22 @@ def preprocess(stream, samp_rate, freq_band):
     end_time = min([trace.stats.endtime for trace in stream])
     if start_time>end_time: print('bad data!'); return []
     st = stream.slice(start_time, end_time)
+    # remove data gap
+    for tr in st:
+        npts = len(tr.data)
+        gap_idx = np.where(tr.data==0)[0]
+        gap_list = np.split(gap_idx, np.where(np.diff(gap_idx)!=1)[0] + 1)
+        gap_list = [gap for gap in gap_list if len(gap)>=10]
+        num_gap = len(gap_list)
+        for ii,gap in enumerate(gap_list):
+            idx0, idx1 = max(0, gap[0]-1), min(npts-1, gap[-1]+1)
+            if ii<num_gap-1: idx2 = min(idx1+(idx1-idx0), gap_list[ii+1][0])
+            else: idx2 = min(idx1+(idx1-idx0), npts-1)
+            if idx1==idx2: continue
+            if idx2==idx1+(idx1-idx0): tr.data[idx0:idx1] = tr.data[idx1:idx2]
+            else:
+                num_tile = int(np.ceil((idx1-idx0)/(idx2-idx1)))
+                tr.data[idx0:idx1] = np.tile(tr.data[idx1:idx2], num_tile)[0:idx1-idx0]
     # resample data
     org_rate = st[0].stats.sampling_rate
     if org_rate!=samp_rate: st.resample(samp_rate)
