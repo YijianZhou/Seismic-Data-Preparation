@@ -5,13 +5,14 @@ from obspy import UTCDateTime
 from scipy.signal import correlate
 
 # preprocess obspy stream
-def preprocess(stream, samp_rate, freq_band):
+def preprocess(stream, samp_rate, freq_band, max_gap=5.):
     # time alignment
     start_time = max([trace.stats.starttime for trace in stream])
     end_time = min([trace.stats.endtime for trace in stream])
     if start_time>end_time: print('bad data!'); return []
     st = stream.slice(start_time, end_time)
     # remove data gap
+    max_gap_npts = int(max_gap*samp_rate)
     for tr in st:
         npts = len(tr.data)
         gap_idx = np.where(tr.data==0)[0]
@@ -20,8 +21,8 @@ def preprocess(stream, samp_rate, freq_band):
         num_gap = len(gap_list)
         for ii,gap in enumerate(gap_list):
             idx0, idx1 = max(0, gap[0]-1), min(npts-1, gap[-1]+1)
-            if ii<num_gap-1: idx2 = min(idx1+(idx1-idx0), gap_list[ii+1][0])
-            else: idx2 = min(idx1+(idx1-idx0), npts-1)
+            if ii<num_gap-1: idx2 = min(idx1+(idx1-idx0), idx1+max_gap_npts, gap_list[ii+1][0])
+            else: idx2 = min(idx1+(idx1-idx0), idx1+max_gap_npts, npts-1)
             if idx1==idx2: continue
             if idx2==idx1+(idx1-idx0): tr.data[idx0:idx1] = tr.data[idx1:idx2]
             else:

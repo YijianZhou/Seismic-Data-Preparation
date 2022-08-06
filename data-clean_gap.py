@@ -14,17 +14,18 @@ bak_dir = '/data/Example_bak'
 min_gap_npts = 10 
 num_gap_bak = 50 # if num_gap>num_gap_bak, backup
 
-def fill_gap(st):
+def fill_gap(st, max_gap=5.):
     data = st[0].data
     npts = len(data)
     gap_idx = np.where(data==0)[0]
     gap_list = np.split(gap_idx, np.where(np.diff(gap_idx)!=1)[0] + 1)
     gap_list = [gap for gap in gap_list if len(gap)>=min_gap_npts]
     num_gap = len(gap_list)
+    max_gap_npts = int(max_gap*st[0].stats.sampling_rate)
     for ii,gap in enumerate(gap_list):
         idx0, idx1 = max(0, gap[0]-1), min(npts-1, gap[-1]+1)
-        if ii<num_gap-1: idx2 = min(idx1+(idx1-idx0), gap_list[ii+1][0])
-        else: idx2 = min(idx1+(idx1-idx0), npts-1)
+        if ii<num_gap-1: idx2 = min(idx1+(idx1-idx0), idx1+max_gap_npts, gap_list[ii+1][0])
+        else: idx2 = min(idx1+(idx1-idx0), idx1+max_gap_npts, npts-1)
         if idx1==idx2: continue
         if idx2==idx1+(idx1-idx0): data[idx0:idx1] = data[idx1:idx2]
         else:
