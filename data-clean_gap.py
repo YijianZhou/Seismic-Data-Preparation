@@ -30,7 +30,7 @@ def fill_gap(st, max_gap=5.):
         if idx2==idx1+(idx1-idx0): data[idx0:idx1] = data[idx1:idx2]
         else:
             num_tile = int(np.ceil((idx1-idx0)/(idx2-idx1)))
-            data[idx0:idx1] = np.tile(data[idx1:idx2], num_tile)[0:idx1-idx0]    st[0].data = data
+            data[idx0:idx1] = np.tile(data[idx1:idx2], num_tile)[0:idx1-idx0]
     st[0].data = data
     return st, len(gap_list)
 
