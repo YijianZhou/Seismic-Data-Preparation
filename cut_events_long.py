@@ -23,7 +23,7 @@ get_data_dict = get_data_dict # modify this if use customized function
 
 
 class Cut_Events(Dataset):
-  """ Dataset for cutting templates
+  """ Dataset for cutting events
   """
   def __init__(self, event_list):
     self.event_list = event_list
