@@ -21,6 +21,22 @@ freq_band = [1, 20]
 samp_rate = 100
 get_data_dict = get_data_dict # modify this if use customized function
 
+def cut_event_window(stream_paths, tp, ts, out_paths):
+    t0 = tp - win_len[0] - sum(win_len)/2
+    t1 = t0 + sum(win_len)*2
+    st  = read(stream_paths[0], starttime=t0, endtime=t1)
+    st += read(stream_paths[1], starttime=t0, endtime=t1)
+    st += read(stream_paths[2], starttime=t0, endtime=t1)
+    if len(st)!=3: return False
+    st = preprocess(st, samp_rate, freq_band)
+    st = st.slice(tp-win_len[0], tp+win_len[1])
+    if len(st)!=3: return False
+    for ii, tr in enumerate(st):
+        tr.write(out_paths[ii], format='sac')
+        tr = sac_ch_time(read(out_paths[ii]))[0]
+        tr.stats.sac.t0, tr.stats.sac.t1 = tp-t0, ts-t0
+        tr.write(out_paths[ii], format='sac')
+    return True
 
 class Cut_Events(Dataset):
   """ Dataset for cutting events
@@ -40,19 +56,10 @@ class Cut_Events(Dataset):
     # cut event
     for net_sta, [tp, ts] in pick_dict.items():
         if net_sta not in data_dict: continue
-        data_paths = data_dict[net_sta]
+        stream_paths = data_dict[net_sta]
         out_paths = [os.path.join(event_dir,'%s.%s'%(net_sta,ii)) for ii in range(3)]
-        st  = read(data_paths[0], starttime=tp-win_len[0], endtime=tp+win_len[1])
-        st += read(data_paths[0], starttime=tp-win_len[0], endtime=tp+win_len[1])
-        st += read(data_paths[0], starttime=tp-win_len[0], endtime=tp+win_len[1])
-        if len(st)!=3: continue
-        st = preprocess(st, samp_rate, freq_band)
-        if len(st)!=3: continue
-        for ii, tr in enumerate(st):
-            tr.write(out_paths[ii], format='sac')
-            tr = sac_ch_time(read(out_paths[ii]))[0]
-            tr.stats.sac.t0, tr.stats.sac.t1 = win_len[0], ts-tp+win_len[0]
-            tr.write(out_paths[ii], format='sac')
+        is_cut = cut_event_window(stream_paths, tp, ts, out_paths)
+        if not is_cut: continue
         data_paths_i.append(out_paths)
     return data_paths_i
 
