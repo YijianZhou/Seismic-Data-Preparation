@@ -72,7 +72,7 @@ class Cut_Events(Dataset):
         end_time = tp + win_len[1]
         if data_format=='sac': st = sac.obspy_slice(stream, start_time, end_time)
         else: st = stream.slice(start_time, end_time)
-        if 0 in st.max() or len(st)!=3: continue
+        if len(st)!=3: continue
         st = st.detrend('demean')  # note: no detrend here
         # write & record out_paths
         data_paths_i.append([])
