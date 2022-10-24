@@ -2,6 +2,7 @@
     SAC: http://ds.iris.edu/ds/nodes/dmc/forms/sac/
     rdseed: https://ds.iris.edu/ds/nodes/dmc/software/downloads/rdseed/
     Jrdseed: http://ds.iris.edu/ds/nodes/dmc/manuals/jrdseed/
+    mseed2sac: https://ds.iris.edu/ds/nodes/dmc/software/downloads/mseed2sac/
 """
 import os, shutil
 from obspy import read, UTCDateTime
