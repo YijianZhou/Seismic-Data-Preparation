@@ -127,9 +127,13 @@ def ch_b(fpath, b):
     s += "q \n"
     p.communicate(s.encode())
 
-def seed2sac(fpath, out_dir=None):
-    if not out_dir: subprocess.call(['rdseed', '-df', fpath])
-    else: subprocess.call(['rdseed', '-df', fpath, '-q', out_dir])
+def seed2sac(fpath, out_dir=None, method='Jrdseed'):
+    if method=='rdseed':
+        if not out_dir: subprocess.call(['rdseed', '-df', fpath])
+        else: subprocess.call(['rdseed', '-df', fpath, '-q', out_dir])
+    if method=='Jrdseed':
+        if not out_dir: os.system('java -jar ~/bin/JrdseedVer0.10.1.jar -d -f %s'%fpath)
+        else: os.system('java -jar ~/bin/JrdseedVer0.10.1.jar -d -f %s -q %s'%(fpath, out_dir))
 
 def get_resp(fpath, out_dir=None):
     if not out_dir: subprocess.call(['rdseed', '-fR', fpath])
