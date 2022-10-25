@@ -10,8 +10,8 @@ import warnings
 warnings.filterwarnings("ignore")
 
 # i/o paths
-fpha1 = 'input/ref.pha' # 1 - ref / target
-fpha2 = 'input/new.pha' # 2 - new / prediction
+fpha1 = 'input/ref.pha' # 1 - target / ref
+fpha2 = 'input/new.pha' # 2 - prediction
 out_match = open('output/eg_phase-match.csv','w')
 out_miss = open('output/eg_phase-miss.csv','w')
 out_event1 = 'input/eg-ref_pha.npy'
@@ -61,31 +61,31 @@ events1 = np.load(out_event1, allow_pickle=True)
 events2 = np.load(out_event2, allow_pickle=True)
 """
 num_event1, num_event2 = len(events1), len(events2)
-print('{} events in {}'.format(num_event1, fpha1))
+print('{} events in {} (ref)'.format(num_event1, fpha1))
 print('{} events in {}'.format(num_event2, fpha2))
 
 # 1. event det rate
-def get_recall(event):
-    ot, lat, lon = event['ot'], event['lat'], event['lon']
+def get_recall(event_ref):
+    ot, lat, lon = event_ref['ot'], event_ref['lat'], event_ref['lon']
     cos_lat = np.cos(lat*np.pi/180)
-    cond_ot = events1[abs(events1['ot']-ot) < ot_dev]
-    cond_lat = 111*abs(events1['lat']-lat) < loc_dev
-    cond_lon = 111*abs(events1['lon']-lon)*cos_lat < loc_dev
-    return events1[cond_ot*cond_lat*cond_lon]
+    cond_ot = events_pred[abs(events_pred['ot']-ot) < ot_dev]
+    cond_lat = 111*abs(events_pred['lat']-lat) < loc_dev
+    cond_lon = 111*abs(events_pred['lon']-lon)*cos_lat < loc_dev
+    return events_pred[cond_ot*cond_lat*cond_lon]
 
 print('getting recalled events')
 pool = mp.Pool(num_workers)
-mp_out = pool.map_async(get_recall, events2)
+mp_out = pool.map_async(get_recall, events1)
 pool.close()
 pool.join()
-event_recall, phase_recall = 0, 0
+num_evt_recall, num_pha_recall = 0, 0
 num_pha1, num_pha2 = 0, 0 
 print('writing recalled events & picks')
-for i,event1 in enumerate(mp_out.get()):
-    if len(event1)==0: continue
-    event_recall += 1
-    event1 = event1[0] #TODO
-    event2 = events2[i]
+for ii,event_recall in enumerate(mp_out.get()):
+    if len(event_recall)==0: continue
+    num_evt_recall += 1
+    event1 = events1[ii]
+    event2 = event_recall[0] #TODO, multi-recall
     # find matched station 
     picks1 = event1['picks']
     picks2 = event2['picks']
@@ -93,26 +93,27 @@ for i,event1 in enumerate(mp_out.get()):
     num_pha2 += len(picks2)
     sta_recall = [sta for sta in picks1.keys() if sta in picks2.keys()]
     sta_miss = [sta for sta in picks1.keys() if sta not in picks2.keys()]
-    phase_recall += len(sta_recall)
+    num_pha_recall += len(sta_recall)
     # write match & miss
     out_match.write(event1['line'])
+    out_match.write(event2['line'])
     for sta in sta_recall:
         tp1, ts1 = picks1[sta]
         tp2, ts2 = picks2[sta]
         out_match.write('{},{},{},{},{}\n'.format(sta, tp1, ts1, tp2, ts2))
     if len(sta_miss)==0: continue
-    out_miss.write(event1['line'])
+    out_miss.write(event2['line'])
     for sta in sta_miss:
-        tp1, ts1 = picks1[sta]
-        out_miss.write('{},{},{}\n'.format(sta, tp1, ts1))
+        tp2, ts2 = picks2[sta]
+        out_miss.write('{},{},{}\n'.format(sta, tp2, ts2))
 
 print('-'*20)
 print('1. Event detection accuracy')
-print('recall num: {} | recall rate: {:.2f}%'.format(event_recall, 100*event_recall/num_event1))
-print('num new: %s'%(num_event2-event_recall))
+print('recall / target num: {} / {} | recall rate: {:.2f}%'.format(num_evt_recall, num_event1, 100*num_evt_recall/num_event1))
+print('num new: %s'%(num_event2-num_evt_recall))
 print('-'*20)
 print('2. Phase detection accuracy (for recalled events)')
-print('recall num: {} | recall rate {:.2f}%'.format(phase_recall, 100*phase_recall/num_pha1))
-print('num new: %s'%(num_pha2-phase_recall))
+print('recall / target num: {} / {} | recall rate {:.2f}%'.format(num_pha_recall, num_pha1, 100*num_pha_recall/num_pha1))
+print('num new: %s'%(num_pha2-num_pha_recall))
 out_match.close()
 out_miss.close()
