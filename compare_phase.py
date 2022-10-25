@@ -74,6 +74,7 @@ def get_recall(event_ref):
     return events_pred[cond_ot*cond_lat*cond_lon]
 
 print('getting recalled events')
+events_pred = event2
 pool = mp.Pool(num_workers)
 mp_out = pool.map_async(get_recall, events1)
 pool.close()
