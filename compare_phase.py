@@ -68,10 +68,10 @@ print('{} events in {}'.format(num_event2, fpha2))
 def get_recall(event_ref):
     ot, lat, lon = event_ref['ot'], event_ref['lat'], event_ref['lon']
     cos_lat = np.cos(lat*np.pi/180)
-    cond_ot = events_pred[abs(events_pred['ot']-ot) < ot_dev]
-    cond_lat = 111*abs(events_pred['lat']-lat) < loc_dev
-    cond_lon = 111*abs(events_pred['lon']-lon)*cos_lat < loc_dev
-    return events_pred[cond_ot*cond_lat*cond_lon]
+    cond_ot = abs(events_pred['ot']-ot) < ot_dev
+    cond_lat = 111*abs(events_pred[cond_ot]['lat']-lat) < loc_dev
+    cond_lon = 111*abs(events_pred[cond_ot]['lon']-lon)*cos_lat < loc_dev
+    return events_pred[cond_ot][cond_lat*cond_lon]
 
 print('getting recalled events')
 events_pred = event2
