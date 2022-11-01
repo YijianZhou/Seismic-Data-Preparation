@@ -9,22 +9,24 @@ import numpy as np
 stream_paths = glob.glob('/data/Example_data/*/*.*Z.SAC') # root/yyyymmdd/date.net.sta.chn
 title = 'Example Data Continuity Plot'
 fout = 'output/eg_data-continuity.pdf'
+fsta = 'input/eg_station.csv'
 # fig config
 fig_size = (12,16)
 fsize_label = 14
 fsize_title = 18
 marker_size = 100
 
-# count existing files
+# get all objective station
 sta_dict = {}
+f=open(fsta); lines=f.readlines(); f.close()
+for line in lines: sta_dict[line.split(',')[0]] = []
+# count existing files
 for stream_path in stream_paths:
     fname = os.path.split(stream_path)[-1]
     date, net, sta, chn = fname.split('.')[0:4]
     net_sta = '.'.join([net, sta])
-    if net_sta not in sta_dict:
-        sta_dict[net_sta] = [UTCDateTime(date).date]
-    else:
-        sta_dict[net_sta].append(UTCDateTime(date).date)
+    if net_sta not in sta_dict: continue
+    sta_dict[net_sta].append(UTCDateTime(date).date)
 
 plt.figure(figsize=fig_size)
 ax = plt.gca()
