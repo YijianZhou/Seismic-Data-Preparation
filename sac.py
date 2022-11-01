@@ -133,19 +133,19 @@ def ch_b(fpath, b):
 
 def seed2sac(fpath, out_dir=None, method='Jrdseed'):
     if method=='rdseed':
-        if not out_dir: subprocess.call(['rdseed', '-df', fpath])
-        else: subprocess.call(['rdseed', '-df', fpath, '-q', out_dir])
+        if not out_dir: os.system('rdseed -df %s'%fpath)
+        else: os.system('rdseed -df %s -q %s' %(fpath, out_dir))
     if method=='Jrdseed':
         if not out_dir: os.system('java -jar ~/bin/JrdseedVer0.10.1.jar -d -f %s'%fpath)
         else: os.system('java -jar ~/bin/JrdseedVer0.10.1.jar -d -f %s -q %s'%(fpath, out_dir))
 
 def get_resp(fpath, out_dir=None):
-    if not out_dir: subprocess.call(['rdseed', '-fR', fpath])
-    else: subprocess.call(['rdseed', '-fR', fpath, '-q', out_dir])
+    if not out_dir: os.system('rdseed -fR %s'%fpath)
+    else: os.system('rdseed -fR %s -q %s'%(fpath, out_dir))
 
 def get_pz(fpath, out_dir=None):
-    if not out_dir: subprocess.call(['rdseed', '-fp', fpath])
-    else: subprocess.call(['rdseed', '-fp', fpath, '-q', out_dir])
+    if not out_dir: os.system('rdseed -fp %s'%fpath)
+    else: os.system('rdseed -fp %s -q %s'%(fpath, out_dir))
 
 def mseed2sac(fpath):
-    subprocess.call(['mseed2sac', '-O', fpath])
+    os.system('mseed2sac -O %s'%fpath)
