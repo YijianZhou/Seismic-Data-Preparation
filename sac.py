@@ -73,7 +73,8 @@ def merge(fpaths, out_path, rm_old=False):
             merge_batch(batch_paths, '%s/tmp.sac'%raw_dir)
         os.rename('%s/tmp.sac'%raw_dir, out_path)
     if rm_old:
-        for fpath in fpaths: os.unlink(fpath)
+        for fpath in fpaths: 
+            if os.path.exists(fpath): os.unlink(fpath)
 
 def ch_sta(fpath, knetwk=None, kstnm=None, kcmpnm=None, stlo=0, stla=0, stel=0):
     p = subprocess.Popen(['sac'], stdin=subprocess.PIPE)
