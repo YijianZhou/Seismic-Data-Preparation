@@ -23,7 +23,7 @@ for line in lines: sta_dict[line.split(',')[0]] = []
 # count existing files
 for stream_path in stream_paths:
     fname = os.path.split(stream_path)[-1]
-    date, net, sta, chn = fname.split('.')[0:4]
+    net, sta, date, chn = fname.split('.')[0:4]
     net_sta = '.'.join([net, sta])
     if net_sta not in sta_dict: continue
     sta_dict[net_sta].append(UTCDateTime(date).date)
