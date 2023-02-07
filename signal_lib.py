@@ -29,9 +29,8 @@ def preprocess(stream, samp_rate, freq_band, max_gap=5.):
                 num_tile = int(np.ceil((idx1-idx0)/(idx2-idx1)))
                 tr.data[idx0:idx1] = np.tile(tr.data[idx1:idx2], num_tile)[0:idx1-idx0]
     # resample data
-    st = st.detrend('demean').detrend('linear').taper(max_percentage=0.05, max_length=5.)
     org_rate = st[0].stats.sampling_rate
-    if org_rate!=samp_rate: st.resample(samp_rate)
+    if org_rate!=samp_rate: st.detrend('demean').detrend('linear').taper(max_percentage=0.05, max_length=5.).resample(samp_rate)
     for ii in range(len(st)):
         st[ii].data[np.isnan(st[ii].data)] = 0
         st[ii].data[np.isinf(st[ii].data)] = 0
