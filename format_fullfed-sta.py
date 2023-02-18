@@ -18,18 +18,26 @@ for line in lines[3:]:
     if len(codes)<11: continue
     net_sta = '.'.join(codes[0:2])
     chn = codes[3]
+    net_sta_chn = '%s.%s'%(net_sta, chn)
     if chn[0:2] not in chn_codes: continue
     lat, lon, ele = [float(code) for code in codes[4:7]]
     if not (lat_min<lat<lat_max and lon_min<lon<lon_max): continue
     gain = float(codes[11])
     t0, t1 = [UTCDateTime(code) for code in codes[-2:]]
     if t1<t_min or t0>t_max: continue
-    if net_sta not in sta_dict: sta_dict[net_sta] = [lat, lon, ele, [gain], [t0.date,t1.date]]
-    else: sta_dict[net_sta][-2].append(gain)
+    if net_sta_chn not in sta_dict: sta_dict[net_sta_chn] = [lat, lon, ele, [gain], [t0.date,t1.date]]
+    else: sta_dict[net_sta_chn][-2].append(gain)
 
-for net_sta, [lat, lon, ele, gains, [t0,t1]] in sta_dict.items():
+out_lines = []
+net_sta_old = '0.0'
+for net_sta_chn, [lat, lon, ele, gains, [t0,t1]] in sta_dict.items():
+    net,sta,chn = net_sta_chn.split('.')
+    net_sta = '%s.%s'%(net,sta)
     if len(gains)==1: gain_code = '%s,%s,%s'%(gains[0], gains[0], gains[0])
     else: gain_code = '%s,%s,%s'%(gains[0], gains[1], gains[2])
-    fout.write('{},{},{},{},{},{},{}\n'.format(net_sta, lat, lon, ele, gain_code, t0, t1))
+    out_line = '{},{},{},{},{},{},{}\n'.format(net_sta_chn, lat, lon, ele, gain_code, t0, t1)
+    if net_sta!=net_sta_old: out_lines.append(out_line)
+    else: out_lines[-1] = out_line
+    net_sta_old = net_sta
+for line in out_lines: fout.write(line)
 fout.close()
-
