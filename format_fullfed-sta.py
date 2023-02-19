@@ -18,7 +18,7 @@ for line in lines[3:]:
     if len(codes)<11: continue
     net_sta = '.'.join(codes[0:2])
     chn = codes[3]
-    net_sta_chn = '%s.%s'%(net_sta, chn)
+    net_sta_chn = '%s.%s'%(net_sta, chn[0:2])
     if chn[0:2] not in chn_codes: continue
     lat, lon, ele = [float(code) for code in codes[4:7]]
     if not (lat_min<lat<lat_max and lon_min<lon<lon_max): continue
