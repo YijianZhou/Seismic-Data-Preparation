@@ -7,7 +7,7 @@ import subprocess
 import multiprocessing as mp
 
 # i/o files
-num_workers = 10
+num_workers = 5
 fsta = 'input/example_pal.sta'
 time_range = '20190704-20190707'
 out_root = '/data/Example_data'
