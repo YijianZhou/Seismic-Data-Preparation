@@ -11,11 +11,16 @@ def preprocess(stream, samp_rate, freq_band, max_gap=5.):
     end_time = min([trace.stats.endtime for trace in stream])
     if start_time>end_time: print('bad data!'); return []
     st = stream.slice(start_time, end_time)
+    # remove zero & inf
+    for ii in range(len(st)):
+        st[ii].data[np.isnan(st[ii].data)] = 0
+        st[ii].data[np.isinf(st[ii].data)] = 0
     # remove data gap
     max_gap_npts = int(max_gap*samp_rate)
     for tr in st:
         npts = len(tr.data)
-        gap_idx = np.where(tr.data==0)[0]
+        data_diff = np.diff(tr.data)
+        gap_idx = np.where(data_diff==0)[0]
         gap_list = np.split(gap_idx, np.where(np.diff(gap_idx)!=1)[0] + 1)
         gap_list = [gap for gap in gap_list if len(gap)>=10]
         num_gap = len(gap_list)
@@ -28,12 +33,10 @@ def preprocess(stream, samp_rate, freq_band, max_gap=5.):
             else:
                 num_tile = int(np.ceil((idx1-idx0)/(idx2-idx1)))
                 tr.data[idx0:idx1] = np.tile(tr.data[idx1:idx2], num_tile)[0:idx1-idx0]
-    # resample data
+    # resample 
+    st = st.detrend('demean').detrend('linear').taper(max_percentage=0.05, max_length=5.)
     org_rate = st[0].stats.sampling_rate
-    if org_rate!=samp_rate: st.detrend('demean').detrend('linear').taper(max_percentage=0.05, max_length=5.).resample(samp_rate)
-    for ii in range(len(st)):
-        st[ii].data[np.isnan(st[ii].data)] = 0
-        st[ii].data[np.isinf(st[ii].data)] = 0
+    if org_rate!=samp_rate: st = st.resample(samp_rate)
     # filter
     freq_min, freq_max = freq_band
     if freq_min and freq_max:
@@ -55,7 +58,7 @@ def sac_ch_time(st):
         tr.stats.sac.nzhour = t0.hour
         tr.stats.sac.nzmin = t0.minute
         tr.stats.sac.nzsec = t0.second
-        tr.stats.sac.nzmsec = t0.microsecond / 1e3
+        tr.stats.sac.nzmsec = int(t0.microsecond / 1e3)
     return st
 
 # calc epicentral distance in km
