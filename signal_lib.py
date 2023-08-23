@@ -11,7 +11,7 @@ def preprocess(stream, samp_rate, freq_band, max_gap=5.):
     end_time = min([trace.stats.endtime for trace in stream])
     if start_time>end_time: print('bad data!'); return []
     st = stream.slice(start_time, end_time)
-    # remove zero & inf
+    # remove nan & inf
     for ii in range(len(st)):
         st[ii].data[np.isnan(st[ii].data)] = 0
         st[ii].data[np.isinf(st[ii].data)] = 0
