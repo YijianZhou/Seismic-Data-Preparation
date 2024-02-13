@@ -6,10 +6,10 @@ from obspy import UTCDateTime
 # i/o paths
 fsta = 'input/station_eg.fullfed'
 fout = open('output/station_eg.csv','w')
-chn_codes = ['HH','BH']
+chn_codes = ['HH','BH'] # sel in this order
 lat_min, lat_max = 40., 49.
 lon_min, lon_max = -128, -126
-t_min, t_max = UTCDateTime('20110101'), UTCDateTime('20170101')
+t_min, t_max = UTCDateTime('20110101'), UTCDateTime('20170101') # as long as there are overlaps
 
 sta_dict = {}
 f=open(fsta); lines=f.readlines(); f.close()
@@ -28,16 +28,21 @@ for line in lines[3:]:
     if net_sta_chn not in sta_dict: sta_dict[net_sta_chn] = [lat, lon, ele, [gain], [t0.date,t1.date]]
     else: sta_dict[net_sta_chn][-2].append(gain)
 
-out_lines = []
-net_sta_old = '0.0'
+out_lines_dict = {}
 for net_sta_chn, [lat, lon, ele, gains, [t0,t1]] in sta_dict.items():
     net,sta,chn = net_sta_chn.split('.')
     net_sta = '%s.%s'%(net,sta)
     if len(gains)==1: gain_code = '%s,%s,%s'%(gains[0], gains[0], gains[0])
     else: gain_code = '%s,%s,%s'%(gains[0], gains[1], gains[2])
     out_line = '{},{},{},{},{},{},{}\n'.format(net_sta_chn, lat, lon, ele, gain_code, t0, t1)
-    if net_sta!=net_sta_old: out_lines.append(out_line)
-    else: out_lines[-1] = out_line
-    net_sta_old = net_sta
-for line in out_lines: fout.write(line)
+    if net_sta not in out_lines_dict: out_lines_dict[net_sta] = [[chn, out_line]]
+    else: out_lines_dict[net_sta].append([chn,out_line])
+
+# remove chn by the order
+for net_sta, chn_lines in out_lines_dict.items():
+    chns = [chn_line[0] for chn_line in chn_lines]
+    for chn in chn_codes: 
+        if chn in chns: break
+    for chn_line in chn_lines:
+        if chn==chn_line[0]: fout.write(chn_line[1])
 fout.close()
